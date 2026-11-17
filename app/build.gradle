@@ -1,0 +1,46 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'ae.llct.homecontrol'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'ae.llct.homecontrol'
+        minSdk 26
+        targetSdk 34
+        // CI sets GITHUB_RUN_NUMBER so every build installs as an update
+        versionCode((System.getenv('GITHUB_RUN_NUMBER') ?: '1') as int)
+        versionName "1.0.${System.getenv('GITHUB_RUN_NUMBER') ?: '0'}"
+    }
+
+    signingConfigs {
+        release {
+            // Fixed key so new builds install over the old one. Keep this repo private.
+            storeFile rootProject.file('keystore/release.jks')
+            storePassword 'o2homepass'
+            keyAlias 'o2home'
+            keyPassword 'o2homepass'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+        debug {
+            signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all { outputFileName = "O2-Home-${variant.versionName}.apk" }
+    }
+}
