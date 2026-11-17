@@ -542,12 +542,31 @@ const APP = !!window.Android;
 const defUrl = APP ? 'mqtt://192.168.10.5:1883' : 'ws://192.168.10.5:1884';
 const uid = p => p + Math.random().toString(36).slice(2,8);
 
+const DEFAULT_ROOMS = [
+  {id:'living',  name:'Living & Dining'},
+  {id:'kitchen', name:'Kitchen'},
+  {id:'master',  name:'Master Bedroom'},
+  {id:'guest',   name:'Guest Room'},
+  {id:'ali',     name:"ALI's Room (First Floor)"},
+  {id:'work',    name:'Work Room'},
+  {id:'theater', name:'Theater Room'},
+];
 let home = store.get('hc.home', null) || {
   name: 'My Home',
-  rooms: [{id:'r1', name:'Living Room'}, {id:'r2', name:'Bedroom'}, {id:'r3', name:'Kitchen'}],
+  rooms: JSON.parse(JSON.stringify(DEFAULT_ROOMS)),
   ctls:  [{id:'c1', topic:'o2/villa/01', ip:'', webpass:''}],
   devices: []          // {id, ctl, ch, used, name, room, icon, color, x, y, shape, len}
 };
+if(!store.get('hc.rooms2', false)){
+  const names = (home.rooms || []).map(r=>r.name).join('|');
+  if(names === 'Living Room|Bedroom|Kitchen'){          // still the starter rooms → use the home's real rooms
+    const map = {}; home.rooms.forEach(r=>{ map[r.id] = r.name === 'Living Room' ? 'living' : r.name === 'Bedroom' ? 'master' : 'kitchen'; });
+    home.devices.forEach(d=>{ if(map[d.room]) d.room = map[d.room]; });
+    home.rooms = JSON.parse(JSON.stringify(DEFAULT_ROOMS));
+    store.set('hc.home', home);
+  }
+  store.set('hc.rooms2', true);
+}
 let cfg = Object.assign({url:defUrl, user:'', pass:'',                 // Home broker (on home Wi-Fi)
   awayUrl:'', awayUser:'', awayPass:'',                                  // Away broker (public / cloud, over the internet)
   broker:'auto', mode:'auto', awake:true, view:'buttons', scope:'all'}, store.get('hc.cfg', {}));
@@ -644,9 +663,11 @@ const scopeList = id => id === 'all' ? used() : inRoom(id);
 function roomIcon(r){
   if(r.id === 'all') return 'house';
   const n = (r.name || '').toLowerCase();
-  if(/bed|guest|kids|child|maid/.test(n)) return 'bed';
+  if(/theat|cinema|media|movie/.test(n)) return 'projector';
+  if(/bed|guest|kids|child|maid|'s room|’s room/.test(n)) return 'bed';
   if(/kitch|pantry/.test(n)) return 'kitchen';
   if(/bath|toilet|wash|wc|shower/.test(n)) return 'bath';
+  if(/living|lounge|majlis|sitting|family/.test(n)) return 'sofa';
   if(/dining/.test(n)) return 'dining';
   if(/out|garden|yard|terrace|balcon|roof|pool|gate|lawn/.test(n)) return 'tree';
   if(/garage|car|park/.test(n)) return 'car';
