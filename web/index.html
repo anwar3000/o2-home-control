@@ -144,6 +144,15 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .row.on .pen{background:#0b0e16}
 .editing .row .pen{display:grid}
 .editing .row .pw{display:none}
+.row .lv{grid-column:2;grid-row:1;display:flex;gap:2px;padding:3px;border-radius:999px;background:#2a3244;align-self:start}
+.row .lv i{font-style:normal;font-size:11.5px;font-weight:700;padding:6px 8px;border-radius:999px;color:#8e97aa;line-height:1}
+.row.lvl-low .lv i[data-lv=low],.row.lvl-high .lv i[data-lv=high]{background:var(--c);color:#0b0e16}
+.row.on .lv{background:#e3e7ef}
+.row.on .lv i{color:#5b6475}
+.row.lvl-low .lv i[data-lv=low],.row.lvl-high .lv i[data-lv=high]{background:color-mix(in srgb,var(--c) 85%,#000);color:#fff}
+.editing .row .lv{display:none}
+.glow.on.low{opacity:.5}
+.spot.low .b{box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 18%,transparent),0 0 16px color-mix(in srgb,var(--c) 70%,transparent)}
 .row.wide{grid-column:span 2;grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:auto auto;min-height:0;align-items:center;gap:12px}
 .row.wide .ic{grid-column:1;grid-row:1}
 .row.wide .tx{grid-column:2;grid-row:1;align-self:center}
@@ -445,12 +454,13 @@ code{font-size:12px;background:rgba(255,255,255,.07);padding:1px 6px;border-radi
     <label>Name</label>
     <input id="eName" maxlength="30" list="devNames">
     <label>Type</label>
-    <div class="segs" id="eKind"><button data-kind="switch">Switch</button><button data-kind="gate">Gate</button><button data-kind="water">Watering</button></div>
+    <div class="segs" id="eKind"><button data-kind="switch">Switch</button><button data-kind="dual">Low / High</button><button data-kind="gate">Gate</button><button data-kind="water">Watering</button></div>
     <label>Room</label>
     <select id="eRoom"></select>
     <div class="two" id="eRelayBox">
       <div><label>Controller</label><select id="eCtl"></select></div>
-      <div id="eChBox"><label>Relay</label><select id="eCh"></select></div>
+      <div id="eChBox"><label id="eChLbl">Relay</label><select id="eCh"></select></div>
+      <div id="eCh2Box"><label>High relay</label><select id="eCh2"></select></div>
     </div>
     <div id="eGateBox">
       <label>Open</label>
@@ -686,7 +696,13 @@ const cst = {};        // ctlId -> {lwt, seen, http, err}
 let client = null, editing = false, conn = {kind:'wait', txt:'Connecting…'}, lastToast = '';
 let gen = 0, active = null, activeUrl = '', failTimer = null;   // which broker is in use: 'home' | 'away'
 
-const isGate = d => d.kind === 'gate', isWater = d => d.kind === 'water', isSwitch = d => !d.kind || d.kind === 'switch';
+const isGate = d => d.kind === 'gate', isWater = d => d.kind === 'water', isSwitch = d => !d.kind || d.kind === 'switch', isDual = d => d.kind === 'dual';
+const canOff = d => isSwitch(d) || isDual(d);
+/* Low / High lights (e.g. cove): low = relay ch ON, ch2 OFF · high = both ON · off = both OFF */
+function level(d){ const a = power[d.ctl+':'+d.ch], b = power[d.ctl+':'+d.ch2];
+  if(a === undefined && b === undefined) return null; if(a === 'ON' && b === 'ON') return 'high'; if(a === 'ON' || b === 'ON') return 'low'; return 'off'; }
+const dualLast = store.get('hc.lv', {});
+const devOn = d => isDual(d) ? ['low','high'].includes(level(d)) : !isGate(d) && power[keyOf(d)] === 'ON';
 const keyOf = d => isWater(d) ? 'w:' + d.id : isGate(d) ? 'g:' + d.id : d.ctl + ':' + d.ch;
 const ctlById = id => home.ctls.find(c=>c.id===id);
 const used = () => home.devices.filter(d=>d.used && (isWater(d) || ctlById(d.ctl)));
@@ -727,12 +743,18 @@ function tileHTML(d){
       <span class="ic">${icon(d.icon || 'water')}</span><span class="tx"><b>${esc(d.name)}</b><small>${waterTxt(d)}</small></span><span class="pen">${icon('pen')}</span>
       <span class="acts">${on ? `<button data-wact="stop" class="pri">Stop</button>` : `<button data-wact="start" class="pri">Start · ${d.minutes || 10} min</button>`}<button data-wact="more">Timer &amp; auto</button></span></div>`;
   }
+  if(isDual(d)){
+    const k = keyOf(d), lv = level(d), off = ctlOnline(d.ctl) === false, on = lv === 'low' || lv === 'high';
+    return `<button class="row dual ${on?'on':''} lvl-${lv||'none'} ${lv?'':'unknown'} ${pending[k]?'pending':''} ${off?'offline':''}" style="--c:${d.color}" data-k="${k}" data-id="${d.id}" aria-pressed="${on}">
+      <span class="ic">${icon(d.icon)}</span><span class="lv"><i data-lv="low">Low</i><i data-lv="high">High</i></span><span class="pen">${icon('pen')}</span>
+      <span class="tx"><b>${esc(d.name)}</b><small>${off ? 'Offline' : pending[k] ? 'Switching…' : lv === 'high' ? 'High' : lv === 'low' ? 'Low' : lv === 'off' ? 'Off' : 'No status'}</small></span></button>`;
+  }
   const k = keyOf(d), st = power[k], off = ctlOnline(d.ctl) === false;
   return `<button class="row ${st==='ON'?'on':''} ${st?'':'unknown'} ${pending[k]?'pending':''} ${off?'offline':''}" style="--c:${d.color}" data-k="${k}" data-id="${d.id}" aria-pressed="${st==='ON'}">
     <span class="ic">${icon(d.icon)}</span><span class="pw"></span><span class="pen">${icon('pen')}</span>
     <span class="tx"><b>${esc(d.name)}</b><small>${off ? 'Offline' : stateTxt(d)}</small></span></button>`;
 }
-function onCount(list){ return list.filter(d=>!isGate(d) && power[keyOf(d)]==='ON').length; }
+function onCount(list){ return list.filter(devOn).length; }
 function render(){
   $('#homeName').textContent = home.name || 'My Home';
   document.title = home.name || 'O2 Home';
@@ -785,10 +807,11 @@ function mapCardHTML(r, mini){
     <div class="room ${mini?'mini':''}" data-room="${esc(r.id)}"></div></div>`;
 }
 function updateDevice(k){
-  const d = devByKey(k); if(!d) return;
-  document.querySelectorAll(`.row[data-k="${k}"]`).forEach(el=>{ el.outerHTML = tileHTML(d); });
-  document.querySelectorAll(`.spot[data-k="${k}"]`).forEach(el=>{ el.className = spotCls(d) + (el.classList.contains('dragging') ? ' dragging' : ''); });
-  document.querySelectorAll(`.room[data-room="${CSS.escape(d.room||'')}"]`).forEach(roomFx);
+  const list = used().filter(d=>keyOf(d) === k || (isDual(d) && d.ctl + ':' + d.ch2 === k)); if(!list.length) return;
+  list.forEach(d=>{ const kk = keyOf(d);
+    document.querySelectorAll(`.row[data-k="${kk}"]`).forEach(el=>{ el.outerHTML = tileHTML(d); });
+    document.querySelectorAll(`.spot[data-k="${kk}"]`).forEach(el=>{ el.className = spotCls(d) + (el.classList.contains('dragging') ? ' dragging' : ''); });
+    document.querySelectorAll(`.room[data-room="${CSS.escape(d.room||'')}"]`).forEach(roomFx); });
   refreshCounts(); status();
 }
 /* ---- rooms: big room bar (‹ name ›), room picker sheet, swipe ---- */
@@ -875,8 +898,9 @@ function place(d, x, y){
 }
 const css = o => Object.entries(o).filter(([k,v])=>v!=='').map(([k,v])=>`${k}:${v}`).join(';');
 function spotCls(d){
-  const p = pos(d), k = keyOf(d), st = power[k], sh = d.shape;
-  return ['spot', sh ? 'strip '+sh : '', st==='ON'?'on':'', (st || isGate(d))?'':'unknown', pending[k]?'pending':'', ctlOnline(d.ctl)===false?'offline':'',
+  const p = pos(d), k = keyOf(d), sh = d.shape, lv = isDual(d) ? level(d) : null;
+  const st = isDual(d) ? (lv === null ? undefined : (lv === 'off' ? 'OFF' : 'ON')) : power[k];
+  return ['spot', sh ? 'strip '+sh : '', st==='ON'?'on':'', lv==='low'?'low':'', (st || isGate(d))?'':'unknown', pending[k]?'pending':'', ctlOnline(d.ctl)===false?'offline':'',
           (!sh || sh==='h') && p.y>72 ? 'up' : '', p.x<16?'l':'', p.x>84?'r':''].join(' ');
 }
 function renderRoomCanvas(el){
@@ -895,7 +919,8 @@ function renderRoomCanvas(el){
 }
 function roomFx(el){
   const rid = el.dataset.room, list = inRoom(rid);
-  el.querySelectorAll('.glow').forEach(g=>g.classList.toggle('on', power[g.dataset.k]==='ON'));
+  el.querySelectorAll('.glow').forEach(g=>{ const d = devByKey(g.dataset.k), lv = d && isDual(d) ? level(d) : (power[g.dataset.k]==='ON' ? 'high' : 'off');
+    g.classList.toggle('on', lv === 'low' || lv === 'high'); g.classList.toggle('low', lv === 'low'); });
   const sh = el.querySelector('.shade'); if(sh) sh.style.opacity = Math.max(0, .58 - list.filter(d=>isLight(d) && power[keyOf(d)]==='ON').length * .13);
   const pj = list.filter(d=>d.icon==='projector'), bm = el.querySelector('.beams');
   if(bm) bm.innerHTML = `<defs><linearGradient id="bm${esc(rid)}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".45"/><stop offset="1" stop-color="#fbcfe8" stop-opacity=".06"/></linearGradient></defs>`
@@ -1113,10 +1138,25 @@ function send(d, cmd){
   updateDevice(k);
 }
 function shake(el){ el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); }
+function dualSet(d, lv){
+  const c = ctlById(d.ctl), k = keyOf(d);
+  if(!c || !d.ch2){ if(c) send(d, lv === 'off' ? 'OFF' : 'ON'); return; }
+  if(!canSendCtl(c)){ toast(c.ip || cfg.mode==='mqtt' ? 'Not connected' : `Not connected — set an IP for ${c.topic}`);
+    document.querySelectorAll(`[data-k="${k}"]`).forEach(shake); return; }
+  if(lv !== 'off'){ dualLast[d.id] = lv; store.set('hc.lv', dualLast); }
+  const steps = lv === 'high' ? [[d.ch,'ON'],[d.ch2,'ON']] : lv === 'low' ? [[d.ch2,'OFF'],[d.ch,'ON']] : [[d.ch,'OFF'],[d.ch2,'OFF']];
+  steps.forEach(([ch, cmd], i)=>setTimeout(()=>sendCtl(c, ch, cmd, i > 0), i * 120));
+  clearTimeout(pending[k]);
+  pending[k] = setTimeout(()=>{ delete pending[k]; updateDevice(k); toast(`No reply from ${d.name}`); }, 5000);
+  updateDevice(k);
+}
 async function runList(list, label){       // list of [device, cmd]
   if(!list.length){ toast('Nothing to switch here'); return; }
   vib(15);
-  for(const [d, cmd] of list){ if(power[keyOf(d)] !== cmd) send(d, cmd); await new Promise(r=>setTimeout(r, 90)); }
+  for(const [d, cmd] of list){
+    if(isDual(d)){ const lv = level(d); if(cmd === 'ON' ? !(lv === 'low' || lv === 'high') : lv !== 'off') dualSet(d, cmd === 'ON' ? (dualLast[d.id] || 'high') : 'off'); }
+    else if(power[keyOf(d)] !== cmd) send(d, cmd);
+    await new Promise(r=>setTimeout(r, 90)); }
   if(label) toast(label);
 }
 function gateDo(d, act){
@@ -1147,11 +1187,12 @@ function allOff(){
     vib(15); const ctls = activeCtls(), gateCtls = new Set(used().filter(isGate).map(d=>d.ctl));
     // controllers with a gate get individual OFFs (never touch gate relays); the rest get one POWER0 OFF
     ctls.forEach((c,i)=>setTimeout(()=>{
-      if(gateCtls.has(c.id)) used().filter(d=>d.ctl===c.id && isSwitch(d)).forEach((d,j)=>setTimeout(()=>sendCtl(c, d.ch, 'OFF', true), j*80));
+      if(gateCtls.has(c.id)) used().filter(d=>d.ctl===c.id && canOff(d)).flatMap(d=>isDual(d) && d.ch2 ? [d.ch, d.ch2] : [d.ch])
+        .forEach((ch,j)=>setTimeout(()=>sendCtl(c, ch, 'OFF', true), j*80));
       else sendCtl(c, 0, 'OFF'); }, i*120));
     setTimeout(()=>{ if(mqttUp()) subscribeAll(); else schedulePoll(0); }, ctls.length*100 + 600);
     toast('Everything off');
-  } else runList(scopeDevs().filter(isSwitch).map(d=>[d,'OFF']), `${roomById(cfg.scope)?.name || 'Room'} off`);
+  } else runList(scopeDevs().filter(canOff).map(d=>[d,'OFF']), `${roomById(cfg.scope)?.name || 'Room'} off`);
 }
 
 /* =================== INPUT =================== */
@@ -1160,6 +1201,10 @@ function activate(id, act){
   const d = home.devices.find(x=>x.id===id); if(!d) return;
   if(editing){ openEditor(id); return; }
   if(isGate(d)){ if(act) gateDo(d, act); else openGate(d); return; }
+  if(isDual(d)){ vib(12); const lv = level(d);
+    if(act === 'low' || act === 'high') dualSet(d, act);
+    else dualSet(d, lv === 'low' || lv === 'high' ? 'off' : (dualLast[d.id] || 'high'));
+    return; }
   if(isWater(d)){ if(act === 'start') waterCmd(d, {cmd:'start', minutes: d.minutes || 10}); else if(act === 'stop') waterCmd(d, {cmd:'stop'}); else openWater(d); return; }
   vib(12); const st = power[keyOf(d)];
   send(d, st==='ON' ? 'OFF' : st==='OFF' ? 'ON' : 'TOGGLE');
@@ -1168,8 +1213,8 @@ let press = null;
 document.addEventListener('pointerdown', e=>{
   const el = e.target.closest('#main .row, .spot');
   if(!el || (e.button && e.button !== 0)) return;
-  const ab = e.target.closest('[data-gact],[data-wact]');
-  press = { el, id: el.dataset.id, act: ab ? (ab.dataset.gact || ab.dataset.wact) : null, pid: e.pointerId, x: e.clientX, y: e.clientY, moved:false, long:false,
+  const ab = e.target.closest('[data-gact],[data-wact],[data-lv]');
+  press = { el, id: el.dataset.id, act: ab ? (ab.dataset.gact || ab.dataset.wact || ab.dataset.lv) : null, pid: e.pointerId, x: e.clientX, y: e.clientY, moved:false, long:false,
             drag: editing && el.classList.contains('spot'), room: el.closest('.room') };
   if(press.drag){ try{ el.setPointerCapture(e.pointerId); }catch(_){} }
   press.timer = setTimeout(()=>{ if(press && !press.moved){ press.long = true; vib(35); openEditor(press.id); } }, 550);
@@ -1206,7 +1251,7 @@ document.addEventListener('click', e=>{
   if(e.target.closest('[data-arrange]')){ setEditing(true); return; }
   const so = e.target.closest('[data-open-setup]'); if(so){ openSetup(so.dataset.openSetup); return; }
   const ro = e.target.closest('[data-roomoff]');
-  if(ro){ runList(inRoom(ro.dataset.roomoff).filter(isSwitch).map(d=>[d,'OFF']), `${roomById(ro.dataset.roomoff)?.name || 'Room'} off`); return; }
+  if(ro){ runList(inRoom(ro.dataset.roomoff).filter(canOff).map(d=>[d,'OFF']), `${roomById(ro.dataset.roomoff)?.name || 'Room'} off`); return; }
   if(e.target.closest('#musicBtn')){ openMusic(); return; }
   const qa = e.target.closest('[data-act]');
   if(qa){ const a = qa.dataset.act, L = scopeDevs().filter(isLight);
@@ -1225,6 +1270,7 @@ function relayOwner(ctl, ch, exceptId){          // who uses relay ch on control
   for(const d of home.devices){
     if(!d.used || d.id === exceptId || isWater(d) || d.ctl !== ctl) continue;
     if(isGate(d)){ for(const k of ['open','close']) for(const st of (d.actions || {})[k] || []) if(st && st.ch === ch) return {d, label: 'gate'}; }
+    else if(isDual(d) && d.ch2 === ch) return {d, label: 'High'};
     else if(d.ch === ch) return {d};
   }
   return null;
@@ -1246,7 +1292,11 @@ function drawEditor(){
   const kind = draft.kind || 'switch';
   document.querySelectorAll('#eKind button').forEach(b=>b.classList.toggle('sel', b.dataset.kind === kind));
   $('#eRelayBox').style.display = kind === 'water' ? 'none' : '';
-  $('#eChBox').style.display = kind === 'switch' ? '' : 'none';
+  $('#eChBox').style.display = kind === 'switch' || kind === 'dual' ? '' : 'none';
+  $('#eCh2Box').style.display = kind === 'dual' ? '' : 'none';
+  $('#eChLbl').textContent = kind === 'dual' ? 'Low relay' : 'Relay';
+  if(kind === 'dual') $('#eCh2').innerHTML = `<option value="0">— choose —</option>` + Array.from({length:RELAYS},(_,i)=>i+1).filter(n=>n !== draft.ch).map(n=>{ const o = relayOwner(draft.ctl, n, draft.id);
+    return `<option value="${n}" ${n===draft.ch2?'selected':''}>Relay ${n}${o ? ' · ' + esc(o.d.name) : ''}</option>`; }).join('');
   $('#eGateBox').style.display = kind === 'gate' ? '' : 'none';
   $('#eWaterBox').style.display = kind === 'water' ? '' : 'none';
   $('#eDel').textContent = kind === 'water' ? 'Remove' : 'Not used';
@@ -1273,6 +1323,7 @@ $('#eIcons').onclick = e=>{ const b = e.target.closest('[data-icon]'); if(b){ dr
 $('#eKind').onclick = e=>{ const b = e.target.closest('[data-kind]'); if(!b) return; const k = b.dataset.kind;
   if(k === 'switch') delete draft.kind; else draft.kind = k;
   if(k === 'gate'){ draft.actions = GATE_DEFAULT(); draft.ch = 0; if(!draft.iconSet) draft.icon = 'gate'; }
+  if(k === 'dual'){ if(!draft.ch) draft.ch = 1; if(!draft.ch2 || draft.ch2 === draft.ch){ const free = Array.from({length:RELAYS},(_,i)=>i+1).find(n=>n !== draft.ch && !relayOwner(draft.ctl, n, draft.id)); draft.ch2 = free || 0; } }
   if(k === 'water'){ draft.topic = draft.topic || 'o2/garden/watering'; draft.minutes = draft.minutes || 10; if(!draft.iconSet) draft.icon = 'water'; }
   drawEditor(); };
 $('#eGateBox').onchange = e=>{ const t = e.target; if(!t.dataset.gs) return; const [a, i] = t.dataset.gs.split(':'); draft.actions[a][+i].ch = +t.value; drawEditor(); };
@@ -1284,7 +1335,8 @@ $('#eColors').onclick = e=>{ const b = e.target.closest('[data-color]'); if(b){ 
 $('#eName').oninput = e=>{ draft.name = e.target.value; const before = draft.icon + (draft.kind||''); autoStyle(draft); if(before !== draft.icon + (draft.kind||'')) drawEditor(); };
 $('#eRoom').onchange = e=>{ if(draft.room !== e.target.value){ draft.room = e.target.value; draft.x = draft.y = null; } };
 $('#eCtl').onchange = e=>{ draft.ctl = e.target.value; drawCh(); drawEditor(); };
-$('#eCh').onchange = e=>{ draft.ch = +e.target.value; };
+$('#eCh').onchange = e=>{ draft.ch = +e.target.value; if(isDual(draft)) drawEditor(); };
+$('#eCh2').onchange = e=>{ draft.ch2 = +e.target.value; };
 $('#eCancel').onclick = ()=> $('#editOv').classList.remove('show');
 $('#eDel').onclick = ()=>{ const d = home.devices.find(x=>x.id===draft.id); if(d){ d.used = false; saveHome(); }
   $('#editOv').classList.remove('show'); afterEdit(); toast('Relay marked not used'); };
@@ -1299,6 +1351,10 @@ $('#eSave').onclick = ()=>{
   } else {
     const t = relayTaken(draft.ctl, draft.ch, draft.id);
     if(t){ toast(`Relay ${draft.ch} is already used by ${t.name}`); return; }
+    if(isDual(draft)){
+      if(!draft.ch2 || draft.ch2 === draft.ch){ toast('Choose a different relay for High'); return; }
+      const t2 = relayTaken(draft.ctl, draft.ch2, draft.id); if(t2){ toast(`Relay ${draft.ch2} is already used by ${t2.name}`); return; }
+    } else delete draft.ch2;
   }
   draft.name = draft.name.trim() || 'Device'; if(!draft.shape) delete draft.shape;
   const i = home.devices.findIndex(x=>x.id===draft.id); home.devices[i] = draft; saveHome();
@@ -1336,8 +1392,8 @@ function drawSetup(){
             <input type="text" value="${esc(c.ip)}" data-ctl-ip="${c.id}" placeholder="IP e.g. 192.168.10.72" inputmode="url" autocapitalize="off" spellcheck="false">
             <input type="password" value="${esc(c.webpass)}" data-ctl-pass="${c.id}" placeholder="Web password (if set)" autocomplete="off">
           </div>
-          ${Array.from({length:RELAYS},(_,i)=>i+1).map(n=>{ const o = relayOwner(c.id, n), d = o && !(isGate(o.d) && o.d.ch !== n) ? o.d : null;
-            if(o && !d) return `<div class="relay lock"><span class="n">${n}</span><span class="lt">${icon('gate')} used by ${esc(o.d.name)}</span></div>`;
+          ${Array.from({length:RELAYS},(_,i)=>i+1).map(n=>{ const o = relayOwner(c.id, n), d = o && !((isGate(o.d) || isDual(o.d)) && o.d.ch !== n) ? o.d : null;
+            if(o && !d) return `<div class="relay lock"><span class="n">${n}</span><span class="lt">${icon(isGate(o.d) ? 'gate' : o.d.icon)} used by ${esc(o.d.name)}${o.label === 'High' ? ' (High)' : ''}</span></div>`;
             return `<div class="relay ${d?'':'off'}">
               <span class="n">${n}</span>
               <label class="tg"><input type="checkbox" data-relay="${c.id}:${n}" ${d?'checked':''}><span class="sw"></span></label>
@@ -1552,7 +1608,7 @@ $('#mClose').onclick = ()=> $('#musicOv').classList.remove('show');
 $('#mStart').onclick = ()=> music.on ? restartEngine() : startMusic();
 $('#mbStop').onclick = ()=> stopMusic();
 $('#mbOpen').onclick = openMusic;
-function rawSend(d, cmd){ const c = ctlById(d.ctl); if(c) sendCtl(c, d.ch, cmd, true); }
+function rawSend(d, cmd){ const c = ctlById(d.ctl); if(!c) return; sendCtl(c, d.ch, cmd, true); if(isDual(d) && d.ch2) setTimeout(()=>sendCtl(c, d.ch2, cmd, true), 60); }
 function onBeat(){
   const now = performance.now(); if(now - music.last < music.cfg.min * 100) return; music.last = now;
   const L = music.pool; if(!L.length) return;

@@ -45,6 +45,8 @@ Brand assets: `brand/` (O2 gold #D4AF37).
 
 ## Device types
 - **Switch** — any relay (lights, AC, fan, TV, projector, water heater, cat's washroom …). The icon is picked from the name.
+- **Low / High** (e.g. cove lights) — long-press → Type *Low / High* → Low relay + High relay. Low = Low relay ON, High relay OFF · High = both ON · Off = both OFF.
+  Same tile size: tap = on (last level) / off, tap *Low* or *High* to choose the level.
 - **Gate** — Setup → Controllers → *+ Add gate* (its own device, not tied to one relay). Per button:
   - **Open**: relay A **ON** + relay B **OFF** (default 7 ON, 8 OFF) · **Close**: relay B **ON** + relay A **OFF** (8 ON, 7 OFF) — OFF is sent first, then ON.
   - 1-second pulse: set it in Tasmota, e.g. `PulseTime7 10`, `PulseTime8 10`.
