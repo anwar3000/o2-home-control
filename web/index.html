@@ -313,6 +313,8 @@ code{font-size:12px;background:rgba(255,255,255,.07);padding:1px 6px;border-radi
 .bkh small{color:var(--mute);font-size:12.5px}
 .bki{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:#1e2536;color:#7dd3fc}
 .bki svg{width:17px;height:17px}
+.use{font-size:12.5px;color:#a7f3d0;line-height:1.5;word-break:break-all}
+.use code{color:#a7f3d0}
 .small-note{font-size:12px;color:var(--mute);margin-top:10px}
 
 .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);transform:translate(-50%,30px);opacity:0;z-index:60;
@@ -749,15 +751,26 @@ function roomFx(el){
 const hostOf = u => (u||'').replace(/^[a-z]+:\/\//i,'').replace(/[:\/].*$/,'');
 const BLABEL = {home:'Home', away:'Away'};
 const mqttUp = () => cfg.mode !== 'http' && !!(client && client.connected);
-function appUrl(url){
-  url = (url || '').trim();
-  if(!APP || !url) return url;
-  if(!/^[a-z]+:\/\//i.test(url)) url = (/:8883$/.test(url) ? 'mqtts://' : 'mqtt://') + url;
-  const m = url.match(/^wss?:\/\/([^:\/]+):(1883|8883)(\/.*)?$/i);
-  if(m) url = (m[2]==='8883' ? 'mqtts://' : 'mqtt://') + m[1] + ':' + m[2];
+/* Tidy a typed broker address: removes spaces, fixes "wss//", https→wss, http→ws,
+   a bare name for Away (e.g. a Cloudflare hostname) → wss://name, a bare IP → plain MQTT (app) / ws (browser) */
+function appUrl(url, away){
+  url = (url || '').replace(/\s+/g, '');
+  if(!url) return url;
+  const m = url.match(/^([a-z]+):?\/\/?(.*)$/i);
+  if(m && /^(wss?|https?|mqtts?|tcp|ssl)$/i.test(m[1])){
+    let p = m[1].toLowerCase(); if(p === 'https') p = 'wss'; if(p === 'http') p = 'ws';
+    url = p + '://' + m[2];
+  }
+  if(!/^[a-z]+:\/\//i.test(url)){
+    const hostPort = url.split('/')[0], isIp = /^\d{1,3}(\.\d{1,3}){3}(:\d+)?$/.test(hostPort), hasPort = /:\d+$/.test(hostPort);
+    if(away && !isIp && !hasPort) url = 'wss://' + url;
+    else if(!APP) url = 'ws://' + url;
+    else url = (/:8883$/.test(hostPort) ? 'mqtts://' : 'mqtt://') + url;
+  }
+  if(APP){ const w = url.match(/^wss?:\/\/([^:\/]+):(1883|8883)(\/.*)?$/i); if(w) url = (w[2]==='8883' ? 'mqtts://' : 'mqtt://') + w[1] + ':' + w[2]; }
   return url;
 }
-cfg.url = appUrl(cfg.url); cfg.awayUrl = appUrl(cfg.awayUrl);
+cfg.url = appUrl(cfg.url); cfg.awayUrl = appUrl(cfg.awayUrl, true);
 function setConn(kind, txt){ conn = {kind, txt}; status(); }
 const activeCtls = () => home.ctls.filter(c=>used().some(d=>d.ctl===c.id));
 function subscribeAll(){
@@ -784,7 +797,7 @@ function connect(){
   tryBroker(plan, 0, ++gen);
 }
 function tryBroker(plan, i, g){
-  const b = plan[i], url = appUrl(b.url), last = i === plan.length - 1;
+  const b = plan[i], url = appUrl(b.url, b.name === 'away'), last = i === plan.length - 1;
   const next = () => { if(g !== gen) return; if(!last){ endClient(); tryBroker(plan, i + 1, g); } };
   const tcp = /^(mqtt|tcp|mqtts|ssl):\/\//i.test(url);
   if(tcp && !APP){ if(!last) return next(); setConn('off','Browser needs a ws:// or wss:// address'); return; }
@@ -793,7 +806,8 @@ function tryBroker(plan, i, g){
   const opts = { username: b.user || undefined, password: b.pass || undefined,
     clientId: 'o2home_' + Math.random().toString(16).slice(2,10), reconnectPeriod: 3000, connectTimeout: 8000, clean: true, keepalive: 30 };
   let c;
-  try{ c = tcp ? nativeClient(url, opts) : mqtt.connect(url, opts); }catch(e){ if(!last) return next(); setConn('off','Bad broker address'); return; }
+  try{ c = tcp ? nativeClient(url, opts) : mqtt.connect(url, opts); }
+  catch(e){ if(!last) return next(); setConn('off', `Bad ${BLABEL[b.name]} address: ${url}`); toast(`${BLABEL[b.name]} broker address not valid: ${url}`); return; }
   client = c;
   clearTimeout(failTimer);   // not connected in time → try the next broker (Home gives up quickly)
   failTimer = setTimeout(()=>{ if(g === gen && client === c && !c.connected) next(); }, b.name === 'home' ? 4000 : 9000);
@@ -803,7 +817,8 @@ function tryBroker(plan, i, g){
   c.on('close', ()=>{ if(client !== c) return; if(conn.kind === 'on') setConn('wait','Reconnecting…'); if(cfg.mode === 'auto') schedulePoll(0);
     // a working connection dropped (e.g. you left home): if it doesn't come back in 8 s, start over — Home first, then Away
     if(active && plan.length > 1){ clearTimeout(failTimer); failTimer = setTimeout(()=>{ if(g === gen && client === c && !c.connected) connect(); }, 8000); } });
-  c.on('error', e=>{ if(client !== c) return; const m = e && e.message ? e.message : 'Error';
+  c.on('error', e=>{ if(client !== c) return; let m = e && e.message ? e.message : 'Error';
+    if(/Invalid header flag bits|Invalid .* packet|Unknown packet/i.test(m)) m = 'Server answered, but not with MQTT — check the address/port (Cloudflare type must be HTTP)';
     if(!active && !last){ next(); return; }            // Home failed before connecting → go to Away now
     setConn('off', `${BLABEL[b.name]}: ${m}`);
     if(cfg.mode === 'mqtt' && m !== lastToast){ lastToast = m; toast(`${BLABEL[b.name]} broker: ${m}`); }
@@ -1113,13 +1128,14 @@ function drawSetup(){
           <input type="text" id="sUrl" value="${esc(cfg.url.replace(/^mqtt:\/\//,''))}" placeholder="${APP ? '192.168.10.5:1883' : 'ws://192.168.10.5:1884'}" autocapitalize="off" spellcheck="false">
           <div class="two"><input type="text" id="sUser" value="${esc(cfg.user)}" placeholder="Username" autocapitalize="off">
             <input type="password" id="sPass" value="${esc(cfg.pass)}" placeholder="Password" autocomplete="off"></div>
+          <div class="use" id="homeUse"></div>
           <div class="hint">${APP ? 'e.g. <code>192.168.10.5:1883</code>' : 'Browser uses WebSockets, e.g. <code>ws://192.168.10.5:1884</code>'}</div></div>
         <div class="bk"><div class="bkh"><span class="bki">${icon('globe')}</span><b>Away broker</b><small>public / cloud, over the internet</small></div>
-          <input type="text" id="sAway" value="${esc(cfg.awayUrl)}" placeholder="${APP ? 'mqtts://your-broker.com:8883' : 'wss://your-broker.com:8884/mqtt'}" autocapitalize="off" spellcheck="false">
+          <input type="text" id="sAway" value="${esc(cfg.awayUrl)}" placeholder="wss://mqtt.yourdomain.com" autocapitalize="off" spellcheck="false">
           <div class="two"><input type="text" id="sAwayUser" value="${esc(cfg.awayUser)}" placeholder="Username" autocapitalize="off">
             <input type="password" id="sAwayPass" value="${esc(cfg.awayPass)}" placeholder="Password" autocomplete="off"></div>
-          <div class="hint">${APP ? 'Secure MQTT: <code>mqtts://host:8883</code>. Plain <code>host:1883</code> also works but is not encrypted.'
-                                 : 'Secure WebSockets: <code>wss://host:8884/mqtt</code> (port and path depend on your broker).'}
+          <div class="use" id="awayUse"></div>
+          <div class="hint">Cloudflare Tunnel: <code>wss://mqtt.yourdomain.com</code> (Secure WebSocket).${APP ? ' A cloud broker with TLS: <code>mqtts://host:8883</code>.' : ''}
             Use a private broker with a username and password — anyone who can reach it can switch your home.</div></div>
       </div>
       <div class="hint" style="margin-top:14px">Direct control uses each controller’s IP (Controllers tab).${APP ? '' : ' In a browser, live status over Direct needs CORS enabled on the Tasmota; commands work without it.'}</div>`;
@@ -1128,6 +1144,11 @@ function drawSetup(){
       $('#modeHint').textContent = MH[cfg.mode]; $('#mqttBox').style.display = cfg.mode==='http' ? 'none' : ''; };
     dm();
     $('#sMode').onclick = e=>{ const b = e.target.closest('[data-mode]'); if(b){ cfg.mode = b.dataset.mode; saveCfg(); dm(); } };
+    const PROTO = u => /^wss:/i.test(u) ? 'Secure WebSocket' : /^ws:/i.test(u) ? 'WebSocket' : /^mqtts:|^ssl:/i.test(u) ? 'MQTT over TLS' : 'MQTT (TCP)';
+    const showUse = () => { const h = appUrl(cfg.url), a = appUrl(cfg.awayUrl, true);
+      $('#homeUse').innerHTML = h ? `Connects with <b>${PROTO(h)}</b> · <code>${esc(h)}</code>` : '';
+      $('#awayUse').innerHTML = a ? `Connects with <b>${PROTO(a)}</b> · <code>${esc(a)}</code>` : ''; };
+    showUse(); $('#mqttBox').addEventListener('input', showUse);
     $('#sUrl').oninput = e=>{ cfg.url = e.target.value.trim(); saveCfg(); };
     $('#sUser').oninput = e=>{ cfg.user = e.target.value.trim(); saveCfg(); };
     $('#sPass').oninput = e=>{ cfg.pass = e.target.value; saveCfg(); };
@@ -1209,7 +1230,7 @@ $('#setBody').addEventListener('click', e=>{
 $('#setDone').onclick = closeSetup;
 function closeSetup(){
   $('#setOv').classList.remove('show'); render();
-  cfg.url = appUrl(cfg.url); cfg.awayUrl = appUrl(cfg.awayUrl); saveCfg();
+  cfg.url = appUrl(cfg.url); cfg.awayUrl = appUrl(cfg.awayUrl, true); saveCfg();
   if(setupSnap !== JSON.stringify(connKey())){ Object.keys(power).forEach(k=>delete power[k]); render(); connect(); }
   else if(mqttUp()) subscribeAll();
 }
