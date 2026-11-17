@@ -10,8 +10,12 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+
 /**
- * Minimal MQTT 3.1.1 client over plain TCP (port 1883) — no external libraries.
+ * Minimal MQTT 3.1.1 client over TCP (1883) or TLS (8883, for public/cloud brokers) — no external libraries.
  * QoS 0 publish/subscribe, keep-alive pings, automatic reconnect every 3 s.
  * Events go to the Listener: connect, close, reconnect, error(msg), message(topic, payload).
  */
@@ -27,15 +31,16 @@ public class NativeMqtt {
     private volatile boolean connected;
     private String host, user, pass, clientId;
     private int port;
+    private boolean tls;
     private int packetId = 1;
 
     public NativeMqtt(Listener l) { this.listener = l; }
 
     public boolean isConnected() { return connected; }
 
-    public synchronized void connect(String host, int port, String user, String pass, String clientId) {
+    public synchronized void connect(String host, int port, boolean tls, String user, String pass, String clientId) {
         stop();
-        this.host = host; this.port = port;
+        this.host = host; this.port = port; this.tls = tls;
         this.user = user == null ? "" : user;
         this.pass = pass == null ? "" : pass;
         this.clientId = (clientId == null || clientId.isEmpty()) ? "roomctl_" + System.currentTimeMillis() : clientId;
@@ -78,6 +83,15 @@ public class NativeMqtt {
             try {
                 Socket s = new Socket();
                 s.connect(new InetSocketAddress(host, port), 8000);
+                if (tls) {                                   // encrypted connection with certificate + hostname check
+                    SSLSocket ss = (SSLSocket) ((SSLSocketFactory) SSLSocketFactory.getDefault()).createSocket(s, host, port, true);
+                    SSLParameters p = ss.getSSLParameters();
+                    p.setEndpointIdentificationAlgorithm("HTTPS");   // verify the certificate belongs to this host
+                    ss.setSSLParameters(p);
+                    ss.setSoTimeout(10000);
+                    ss.startHandshake();
+                    s = ss;
+                }
                 s.setSoTimeout(75000);
                 s.setTcpNoDelay(true);
                 if (g != gen) { s.close(); return; }
@@ -166,7 +180,9 @@ public class NativeMqtt {
         if (m == null) return e.getClass().getSimpleName();
         if (m.contains("ECONNREFUSED")) return "Connection refused (is the broker running?)";
         if (m.contains("EHOSTUNREACH") || m.contains("ENETUNREACH")) return "Host unreachable (same Wi-Fi?)";
-        if (m.toLowerCase().contains("timed out") || m.contains("timeout")) return "Timed out (same Wi-Fi?)";
+        if (m.toLowerCase().contains("timed out") || m.contains("timeout")) return "Timed out";
+        if (e instanceof javax.net.ssl.SSLException || m.contains("SSL") || m.contains("Certificate")) return "Secure connection failed (" + m + ")";
+        if (m.contains("Unable to resolve host") || m.contains("No address associated")) return "Broker name not found (no internet?)";
         return m;
     }
 

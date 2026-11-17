@@ -59,9 +59,9 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .quick{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;margin:6px -16px 4px;padding:2px 16px 4px;
   -webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent)}
 .quick::-webkit-scrollbar{display:none}
-.qa{flex:none;display:flex;align-items:center;gap:9px;height:46px;padding:0 16px 0 8px;border-radius:15px;background:var(--card);
-  border:1px solid var(--line);font-size:14px;font-weight:600;white-space:nowrap}
-.qa i{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:color-mix(in srgb,var(--c) 22%,transparent);color:var(--c)}
+.qa{flex:none;display:flex;align-items:center;gap:9px;height:44px;padding:0 16px 0 7px;border-radius:999px;background:#151a26;
+  border:1px solid rgba(255,255,255,.06);font-size:14px;font-weight:600;white-space:nowrap;color:#e9edf5}
+.qa i{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--c) 18%,transparent);color:var(--c)}
 .qa i svg{width:17px;height:17px}
 .qa:active{transform:scale(.96)}
 .qa.alloff{background:color-mix(in srgb,#ef4444 16%,var(--card));border-color:color-mix(in srgb,#ef4444 35%,transparent)}
@@ -69,27 +69,45 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 
 .sec{margin-top:18px}
 .sh{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 2px 10px}
-.sh b{font-size:16px;font-weight:700}
+.sh b{font-size:17px;font-weight:700;letter-spacing:-.01em}
 .sh small{color:var(--mute);font-size:13px;margin-left:6px;font-weight:500}
-.sh button{font-size:13px;font-weight:600;color:var(--mute);padding:6px 11px;border-radius:10px;background:var(--card)}
+.sh button{font-size:13px;font-weight:600;color:var(--mute);padding:7px 12px;border-radius:999px;background:#151a26;border:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:6px}
+.sh button svg{width:14px;height:14px}
+.sh .soff:active{color:#fca5a5}
 .sh .open{color:var(--text)}
 .rows{display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr))}
-.row{--c:#7dd3fc;width:100%;display:flex;align-items:center;gap:10px;min-height:64px;padding:10px 12px;border-radius:18px;position:relative;
-  background:var(--card);border:1px solid var(--line);text-align:left;transition:background .3s,border-color .3s,transform .12s;
+/* device tiles — dark when off, bright when on */
+.row{--c:#7dd3fc;position:relative;width:100%;min-height:112px;padding:13px 13px 12px;border-radius:20px;display:grid;
+  grid-template-columns:1fr auto;grid-template-rows:auto 1fr;gap:10px;text-align:left;
+  background:#151a26;border:1px solid rgba(255,255,255,.06);box-shadow:0 1px 0 rgba(255,255,255,.03) inset;
+  transition:background .25s,border-color .25s,box-shadow .25s,transform .12s;
   touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
-.row:active{transform:scale(.98)}
-.row .ic{width:40px;height:40px;border-radius:13px;flex:none;display:grid;place-items:center;background:var(--card2);color:var(--mute);transition:.3s}
-.row .tx{flex:1;min-width:0}
-.row b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:14.5px;font-weight:650;line-height:1.2}
-.row small{display:block;font-size:12px;color:var(--mute);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.row.on{background:color-mix(in srgb,var(--c) 13%,var(--card));border-color:color-mix(in srgb,var(--c) 40%,transparent)}
-.row.on .ic{background:var(--c);color:#0b0e16;box-shadow:0 0 22px color-mix(in srgb,var(--c) 55%,transparent)}
-.row.on small{color:color-mix(in srgb,var(--c) 70%,#fff)}
-.row.unknown{opacity:.75}
-.row.pending .ic{animation:pulse .7s infinite}
-.row.offline,.spot.offline{opacity:.4}
-.row .pen{display:none;width:30px;height:30px;flex:none;border-radius:10px;place-items:center;background:var(--card2)}
+.row:active{transform:scale(.97)}
+@media (hover:hover){ .row:hover{border-color:rgba(255,255,255,.14)} }
+.row .ic{grid-column:1;grid-row:1;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#232b3b;color:#c3cad8;transition:.25s;position:relative}
+.row .ic svg{width:22px;height:22px}
+.row .pw{grid-column:2;grid-row:1;width:36px;height:22px;border-radius:999px;background:#2a3244;position:relative;transition:background .25s}
+.row .pw::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#8e97aa;transition:left .25s cubic-bezier(.3,1.4,.5,1),background .25s}
+.row .tx{grid-column:1 / span 2;grid-row:2;align-self:end;min-width:0}
+.row b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:15px;font-weight:650;line-height:1.22;color:#e9edf5;letter-spacing:-.01em}
+.row small{display:block;font-size:12.5px;font-weight:500;color:#7f889b;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row.on{background:#f4f6fa;border-color:transparent;box-shadow:0 10px 28px -12px color-mix(in srgb,var(--c) 70%,transparent)}
+.row.on .ic{background:var(--c);color:#0b0e16;box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 22%,transparent)}
+.row.on .pw{background:color-mix(in srgb,var(--c) 85%,#000)}
+.row.on .pw::after{left:17px;background:#fff}
+.row.on b{color:#0d111b}
+.row.on small{color:color-mix(in srgb,var(--c) 55%,#1a1f2b);font-weight:650}
+.row.unknown .pw{opacity:.4}
+.row.unknown small{color:#5f687a}
+.row.pending .ic::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:2px solid transparent;border-top-color:currentColor;animation:rot .8s linear infinite}
+.row.pending.on .ic::after{border-top-color:#0b0e16}
+.row.offline{opacity:.45}
+.row.offline small{color:#f87171}
+.row .pen{display:none;grid-column:2;grid-row:1;width:30px;height:30px;border-radius:10px;place-items:center;background:#2a3244;color:#fff}
+.row .pen svg{width:16px;height:16px}
+.row.on .pen{background:#0b0e16}
 .editing .row .pen{display:grid}
+.editing .row .pw{display:none}
 
 /* ---------- maps ---------- */
 .mapgrid{display:grid;gap:14px;grid-template-columns:1fr}
@@ -252,6 +270,13 @@ code{font-size:12px;background:rgba(255,255,255,.07);padding:1px 6px;border-radi
 .relay .tg input{display:none}
 .relay .ed{width:40px;height:42px;border-radius:11px;display:grid;place-items:center;background:#121724;border:1px solid var(--line)}
 .relay .ed svg{width:16px;height:16px}
+.bk{margin-top:14px;padding:14px;border-radius:16px;background:#0d111b;border:1px solid var(--line);display:grid;gap:8px}
+.bk input{background:#121724}
+.bkh{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.bkh b{font-size:15px}
+.bkh small{color:var(--mute);font-size:12.5px}
+.bki{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:#1e2536;color:#7dd3fc}
+.bki svg{width:17px;height:17px}
 .small-note{font-size:12px;color:var(--mute);margin-top:10px}
 
 .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);transform:translate(-50%,30px);opacity:0;z-index:60;
@@ -272,7 +297,7 @@ code{font-size:12px;background:rgba(255,255,255,.07);padding:1px 6px;border-radi
 @media (max-width:599px){ .spot .lb{display:none} .editing .spot .lb{display:block} }
 @media (max-width:360px){
   :root{--s:42px;--strip:34px}
-  .row{gap:8px;padding:9px 10px}.row .ic{width:36px;height:36px}.row b{font-size:13.5px}
+  .row{min-height:104px;padding:11px}.row .ic{width:38px;height:38px}.row b{font-size:14px}
   .relay{gap:5px}
 }
 @media (min-width:600px){
@@ -281,7 +306,7 @@ code{font-size:12px;background:rgba(255,255,255,.07);padding:1px 6px;border-radi
   .tabs{margin:10px -24px 0;padding:0 24px 10px}
   .wrap{padding-left:24px;padding-right:24px}
   .quick{margin:6px -24px 4px;padding:2px 24px 4px}
-  .rows{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}
+  .rows{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
   .mapgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .sheet{border-radius:24px;margin-bottom:24px;border:1px solid var(--line)}
   .ov{align-items:center}
@@ -439,6 +464,8 @@ const ICONS = {
   move:`<path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/>`,
   up:`<path d="M6 15l6-6 6 6"/>`, down:`<path d="M6 9l6 6 6-6"/>`,
   trash:`<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>`,
+  house:`<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>`,
+  globe:`<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/>`,
   pen:`<path d="M4 20h4L19 9l-4-4L4 16z"/>`, plus:`<path d="M12 5v14M5 12h14"/>`,
 };
 const PICK_ICONS = ['bulb','strip','spot','chandelier','floor','wall','outdoor','fan','ac','heater','projector','tv','speaker','socket','plug','curtain','door','pump'];
@@ -463,7 +490,9 @@ let home = store.get('hc.home', null) || {
   ctls:  [{id:'c1', topic:'o2/villa/01', ip:'', webpass:''}],
   devices: []          // {id, ctl, ch, used, name, room, icon, color, x, y, shape, len}
 };
-let cfg = Object.assign({url:defUrl, user:'', pass:'', mode:'auto', awake:true, view:'buttons', scope:'all'}, store.get('hc.cfg', {}));
+let cfg = Object.assign({url:defUrl, user:'', pass:'',                 // Home broker (on home Wi-Fi)
+  awayUrl:'', awayUser:'', awayPass:'',                                  // Away broker (public / cloud, over the internet)
+  broker:'auto', mode:'auto', awake:true, view:'buttons', scope:'all'}, store.get('hc.cfg', {}));
 const saveHome = () => store.set('hc.home', home);
 const saveCfg  = () => store.set('hc.cfg', cfg);
 
@@ -471,6 +500,7 @@ const power = {};      // key "ctlId:ch" -> 'ON' | 'OFF'
 const pending = {};    // key -> timeout
 const cst = {};        // ctlId -> {lwt, seen, http, err}
 let client = null, editing = false, conn = {kind:'wait', txt:'Connecting…'}, lastToast = '';
+let gen = 0, active = null, activeUrl = '', failTimer = null;   // which broker is in use: 'home' | 'away'
 
 const keyOf = d => d.ctl + ':' + d.ch;
 const ctlById = id => home.ctls.find(c=>c.id===id);
@@ -487,10 +517,9 @@ const stateTxt = d => pending[keyOf(d)] ? 'Switching…' : power[keyOf(d)]==='ON
 function ctlOnline(id){ const s = C(id); if(mqttUp()) return s.lwt === false ? false : (s.lwt || s.seen) ? true : null; return s.http; }
 function tileHTML(d){
   const k = keyOf(d), st = power[k], off = ctlOnline(d.ctl) === false;
-  return `<button class="row ${st==='ON'?'on':''} ${st?'':'unknown'} ${pending[k]?'pending':''} ${off?'offline':''}" style="--c:${d.color}" data-k="${k}" data-id="${d.id}">
-    <span class="ic">${icon(d.icon)}</span>
-    <span class="tx"><b>${esc(d.name)}</b><small>${off ? 'Offline' : stateTxt(d)}</small></span>
-    <span class="pen">${icon('pen')}</span></button>`;
+  return `<button class="row ${st==='ON'?'on':''} ${st?'':'unknown'} ${pending[k]?'pending':''} ${off?'offline':''}" style="--c:${d.color}" data-k="${k}" data-id="${d.id}" aria-pressed="${st==='ON'}">
+    <span class="ic">${icon(d.icon)}</span><span class="pw"></span><span class="pen">${icon('pen')}</span>
+    <span class="tx"><b>${esc(d.name)}</b><small>${off ? 'Offline' : stateTxt(d)}</small></span></button>`;
 }
 function onCount(list){ return list.filter(d=>power[keyOf(d)]==='ON').length; }
 function render(){
@@ -534,7 +563,7 @@ function render(){
     if(inAll){
       main.innerHTML = roomsToShow.map(r=>{ const list = inRoom(r.id), n = onCount(list);
         return `<div class="sec" data-sec="${esc(r.id)}"><div class="sh"><span><b>${esc(r.name)}</b><small>${n ? n+' on' : ''}</small></span>
-          <button data-roomoff="${esc(r.id)}">Off</button></div><div class="rows">${list.map(tileHTML).join('')}</div></div>`; }).join('');
+          <button class="soff" data-roomoff="${esc(r.id)}">${icon('power')}Turn off</button></div><div class="rows">${list.map(tileHTML).join('')}</div></div>`; }).join('');
     } else {
       main.innerHTML = `<div class="rows" style="margin-top:12px">${inRoom(roomsToShow[0].id).map(tileHTML).join('')}</div>`;
     }
@@ -564,7 +593,7 @@ function status(){
   const ids = [...new Set(all.map(d=>d.ctl))], online = ids.filter(id=>ctlOnline(id)).length;
   const tail = `${ids.length ? `${online}/${ids.length} online · ` : ''}${on} on`;
   let kind = conn.kind, txt = conn.txt;
-  if(mqttUp()){ kind = online < ids.length && ids.some(id=>ctlOnline(id)===false) ? 'wait' : 'on'; txt = `MQTT ${brokerHost()} · ${tail}`; }
+  if(mqttUp()){ kind = online < ids.length && ids.some(id=>ctlOnline(id)===false) ? 'wait' : 'on'; txt = `${BLABEL[active] || 'MQTT'} · ${hostOf(activeUrl)} · ${tail}`; }
   else if(cfg.mode !== 'mqtt' && ids.some(id=>C(id).http)){ kind = online < ids.length ? 'wait' : 'on'; txt = `Direct · ${tail}`; }
   else if(cfg.mode === 'http'){ kind = ids.length && ids.every(id=>C(id).http===false) ? 'off' : 'wait'; txt = kind==='off' ? 'Controllers not reachable' : 'Connecting to controllers…'; }
   else if(cfg.mode === 'auto' && ids.length && ids.every(id=>C(id).http===false) && conn.kind!=='wait'){ kind = 'off'; txt = 'Not reachable (MQTT & direct)'; }
@@ -619,17 +648,18 @@ function roomFx(el){
 }
 
 /* =================== MQTT =================== */
-const brokerHost = () => (cfg.url||'').replace(/^[a-z]+:\/\//i,'').replace(/[:\/].*$/,'');
+const hostOf = u => (u||'').replace(/^[a-z]+:\/\//i,'').replace(/[:\/].*$/,'');
+const BLABEL = {home:'Home', away:'Away'};
 const mqttUp = () => cfg.mode !== 'http' && !!(client && client.connected);
 function appUrl(url){
   url = (url || '').trim();
   if(!APP || !url) return url;
-  if(!/^[a-z]+:\/\//i.test(url)) url = 'mqtt://' + url;
+  if(!/^[a-z]+:\/\//i.test(url)) url = (/:8883$/.test(url) ? 'mqtts://' : 'mqtt://') + url;
   const m = url.match(/^wss?:\/\/([^:\/]+):(1883|8883)(\/.*)?$/i);
-  if(m) url = 'mqtt://' + m[1] + ':' + m[2];
+  if(m) url = (m[2]==='8883' ? 'mqtts://' : 'mqtt://') + m[1] + ':' + m[2];
   return url;
 }
-cfg.url = appUrl(cfg.url);
+cfg.url = appUrl(cfg.url); cfg.awayUrl = appUrl(cfg.awayUrl);
 function setConn(kind, txt){ conn = {kind, txt}; status(); }
 const activeCtls = () => home.ctls.filter(c=>used().some(d=>d.ctl===c.id));
 function subscribeAll(){
@@ -638,33 +668,54 @@ function subscribeAll(){
     client.subscribe([`stat/${b}/+`, `tele/${b}/STATE`, `tele/${b}/LWT`]);
     client.publish(`cmnd/${b}/STATE`, ''); });
 }
+function brokerPlan(){
+  const H = cfg.url ? {name:'home', url:cfg.url, user:cfg.user, pass:cfg.pass} : null;
+  const A = cfg.awayUrl ? {name:'away', url:cfg.awayUrl, user:cfg.awayUser, pass:cfg.awayPass} : null;
+  if(cfg.broker === 'home') return [H].filter(Boolean);
+  if(cfg.broker === 'away') return [A].filter(Boolean);
+  return [H, A].filter(Boolean);                       // Auto: Home first, then Away
+}
+function endClient(){ clearTimeout(failTimer); if(client){ const c = client; client = null; try{ c.end(true); }catch(e){} } }
 function connect(){
-  if(client){ try{ client.end(true); }catch(e){} client = null; }
+  endClient(); active = null; activeUrl = ''; lastToast = '';
   Object.keys(cst).forEach(k=>delete cst[k]);
   schedulePoll(cfg.mode === 'http' ? 0 : 2500);
   if(cfg.mode === 'http'){ setConn('wait','Direct'); return; }
-  if(!cfg.url){ setConn('off','Set the broker in Setup'); return; }
-  cfg.url = appUrl(cfg.url); lastToast = '';
-  const tcp = /^(mqtt|tcp):\/\//i.test(cfg.url);
-  if(tcp && !APP){ setConn('off','Browser needs a ws:// broker address'); return; }
-  if(!tcp && !window.mqtt){ setConn('off','MQTT library missing'); return; }
-  setConn('wait','Connecting…');
-  const opts = { username: cfg.user || undefined, password: cfg.pass || undefined,
+  const plan = brokerPlan();
+  if(!plan.length){ setConn('off','Set the broker in Setup'); return; }
+  tryBroker(plan, 0, ++gen);
+}
+function tryBroker(plan, i, g){
+  const b = plan[i], url = appUrl(b.url), last = i === plan.length - 1;
+  const next = () => { if(g !== gen) return; if(!last){ endClient(); tryBroker(plan, i + 1, g); } };
+  const tcp = /^(mqtt|tcp|mqtts|ssl):\/\//i.test(url);
+  if(tcp && !APP){ if(!last) return next(); setConn('off','Browser needs a ws:// or wss:// address'); return; }
+  if(!tcp && !window.mqtt){ if(!last) return next(); setConn('off','MQTT library missing'); return; }
+  setConn('wait', `Connecting ${BLABEL[b.name]}…`);
+  const opts = { username: b.user || undefined, password: b.pass || undefined,
     clientId: 'o2home_' + Math.random().toString(16).slice(2,10), reconnectPeriod: 3000, connectTimeout: 8000, clean: true, keepalive: 30 };
-  try{ client = tcp ? nativeClient(cfg.url, opts) : mqtt.connect(cfg.url, opts); }
-  catch(e){ setConn('off','Bad broker address'); return; }
-  client.on('connect', ()=>{ setConn('on','Connected'); lastToast = ''; subscribeAll(); render(); });
-  client.on('reconnect', ()=>{ if(conn.kind!=='off') setConn('wait','Reconnecting…'); });
-  client.on('close', ()=>{ if(conn.kind==='on') setConn('wait','Reconnecting…'); if(cfg.mode==='auto') schedulePoll(0); });
-  client.on('error', e=>{ const m = e && e.message ? e.message : 'Error'; setConn('off', m);
-    if(cfg.mode === 'mqtt' && m !== lastToast){ lastToast = m; toast(m); }
+  let c;
+  try{ c = tcp ? nativeClient(url, opts) : mqtt.connect(url, opts); }catch(e){ if(!last) return next(); setConn('off','Bad broker address'); return; }
+  client = c;
+  clearTimeout(failTimer);   // not connected in time → try the next broker (Home gives up quickly)
+  failTimer = setTimeout(()=>{ if(g === gen && client === c && !c.connected) next(); }, b.name === 'home' ? 4000 : 9000);
+  c.on('connect', ()=>{ if(client !== c) return; clearTimeout(failTimer); active = b.name; activeUrl = url;
+    setConn('on','Connected'); lastToast = ''; subscribeAll(); render(); });
+  c.on('reconnect', ()=>{ if(client !== c) return; if(conn.kind !== 'off') setConn('wait','Reconnecting…'); });
+  c.on('close', ()=>{ if(client !== c) return; if(conn.kind === 'on') setConn('wait','Reconnecting…'); if(cfg.mode === 'auto') schedulePoll(0);
+    // a working connection dropped (e.g. you left home): if it doesn't come back in 8 s, start over — Home first, then Away
+    if(active && plan.length > 1){ clearTimeout(failTimer); failTimer = setTimeout(()=>{ if(g === gen && client === c && !c.connected) connect(); }, 8000); } });
+  c.on('error', e=>{ if(client !== c) return; const m = e && e.message ? e.message : 'Error';
+    if(!active && !last){ next(); return; }            // Home failed before connecting → go to Away now
+    setConn('off', `${BLABEL[b.name]}: ${m}`);
+    if(cfg.mode === 'mqtt' && m !== lastToast){ lastToast = m; toast(`${BLABEL[b.name]} broker: ${m}`); }
     if(cfg.mode === 'auto') schedulePoll(0); });
-  client.on('message', onMsg);
+  c.on('message', (t, p)=>{ if(client === c) onMsg(t, p); });
 }
 function nativeClient(url, o){        // Android app: native MQTT over TCP, same interface as mqtt.js
-  const u = url.match(/^(?:mqtt|tcp):\/\/([^:\/]+)(?::(\d+))?/i);
+  const u = url.match(/^(mqtt|tcp|mqtts|ssl):\/\/([^:\/]+)(?::(\d+))?/i);
   if(!u) throw new Error('Use host:1883');
-  const host = u[1], port = +(u[2] || 1883), h = {};
+  const tls = /^(mqtts|ssl)$/i.test(u[1]), host = u[2], port = +(u[3] || (tls ? 8883 : 1883)), h = {};
   const emit = (ev, ...a) => (h[ev]||[]).forEach(f=>{ try{ f(...a); }catch(e){ console.error(e); } });
   const c = {
     connected: false,
@@ -672,7 +723,7 @@ function nativeClient(url, o){        // Android app: native MQTT over TCP, same
     subscribe(t){ [].concat(t).forEach(x=>Android.mqttSubscribe(x)); return c; },
     publish(t, p){ Android.mqttPublish(t, String(p)); return c; },
     end(){ c.connected = false; if(window.__mq === handler) window.__mq = null; Android.mqttDisconnect(); },
-    reconnect(){ Android.mqttConnect(host, port, o.username||'', o.password||'', o.clientId||''); }
+    reconnect(){ Android.mqttConnect(host, port, tls, o.username||'', o.password||'', o.clientId||''); }
   };
   const handler = (ev, a, b) => {
     if(ev==='connect'){ c.connected = true; emit('connect'); }
@@ -913,7 +964,8 @@ function afterEdit(){ if(draftFromSetup && $('#setOv').classList.contains('show'
 /* =================== SETUP =================== */
 let stab = 'rooms', setupSnap = '';
 const TOPIC_RE = /^o2\/villa\/(\d{2})$/;
-function openSetup(tab){ stab = tab || 'rooms'; setupSnap = JSON.stringify([cfg.url, cfg.user, cfg.pass, cfg.mode, home.ctls]); drawSetup(); $('#setOv').classList.add('show'); }
+const connKey = () => [cfg.url, cfg.user, cfg.pass, cfg.awayUrl, cfg.awayUser, cfg.awayPass, cfg.broker, cfg.mode, home.ctls];
+function openSetup(tab){ stab = tab || 'rooms'; setupSnap = JSON.stringify(connKey()); drawSetup(); $('#setOv').classList.add('show'); }
 function drawSetup(){
   document.querySelectorAll('#stabs button').forEach(b=>b.classList.toggle('sel', b.dataset.tab===stab));
   const B = $('#setBody');
@@ -953,13 +1005,25 @@ function drawSetup(){
     B.innerHTML = `<label>Connection</label>
       <div class="segs" id="sMode"><button data-mode="auto">Auto</button><button data-mode="mqtt">MQTT</button><button data-mode="http">Direct</button></div>
       <div class="hint" id="modeHint"></div>
-      <div id="mqttBox"><label>MQTT broker</label>
-        <input type="text" id="sUrl" value="${esc(cfg.url.replace(/^mqtt:\/\//,''))}" placeholder="${APP ? '192.168.10.5:1883' : 'ws://192.168.10.5:1884'}" autocapitalize="off" spellcheck="false">
-        <div class="hint">${APP ? 'Plain MQTT, e.g. <code>192.168.10.5:1883</code>' : 'Browser uses MQTT over WebSockets, e.g. <code>ws://192.168.10.5:1884</code>'}</div>
-        <div class="two"><div><label>Username</label><input type="text" id="sUser" value="${esc(cfg.user)}" autocapitalize="off"></div>
-          <div><label>Password</label><input type="password" id="sPass" value="${esc(cfg.pass)}" autocomplete="off"></div></div></div>
+      <div id="mqttBox">
+        <label>Which broker</label>
+        <div class="segs" id="sBroker"><button data-broker="auto">Auto</button><button data-broker="home">Home</button><button data-broker="away">Away</button></div>
+        <div class="hint" id="brokerHint"></div>
+        <div class="bk"><div class="bkh"><span class="bki">${icon('house')}</span><b>Home broker</b><small>on your home Wi-Fi</small></div>
+          <input type="text" id="sUrl" value="${esc(cfg.url.replace(/^mqtt:\/\//,''))}" placeholder="${APP ? '192.168.10.5:1883' : 'ws://192.168.10.5:1884'}" autocapitalize="off" spellcheck="false">
+          <div class="two"><input type="text" id="sUser" value="${esc(cfg.user)}" placeholder="Username" autocapitalize="off">
+            <input type="password" id="sPass" value="${esc(cfg.pass)}" placeholder="Password" autocomplete="off"></div>
+          <div class="hint">${APP ? 'e.g. <code>192.168.10.5:1883</code>' : 'Browser uses WebSockets, e.g. <code>ws://192.168.10.5:1884</code>'}</div></div>
+        <div class="bk"><div class="bkh"><span class="bki">${icon('globe')}</span><b>Away broker</b><small>public / cloud, over the internet</small></div>
+          <input type="text" id="sAway" value="${esc(cfg.awayUrl)}" placeholder="${APP ? 'mqtts://your-broker.com:8883' : 'wss://your-broker.com:8884/mqtt'}" autocapitalize="off" spellcheck="false">
+          <div class="two"><input type="text" id="sAwayUser" value="${esc(cfg.awayUser)}" placeholder="Username" autocapitalize="off">
+            <input type="password" id="sAwayPass" value="${esc(cfg.awayPass)}" placeholder="Password" autocomplete="off"></div>
+          <div class="hint">${APP ? 'Secure MQTT: <code>mqtts://host:8883</code>. Plain <code>host:1883</code> also works but is not encrypted.'
+                                 : 'Secure WebSockets: <code>wss://host:8884/mqtt</code> (port and path depend on your broker).'}
+            Use a private broker with a username and password — anyone who can reach it can switch your home.</div></div>
+      </div>
       <div class="hint" style="margin-top:14px">Direct control uses each controller’s IP (Controllers tab).${APP ? '' : ' In a browser, live status over Direct needs CORS enabled on the Tasmota; commands work without it.'}</div>`;
-    const MH = {auto:'Uses MQTT. If the broker is down, talks to each Tasmota directly by its IP — and back when MQTT returns.', mqtt:'Only through the MQTT broker.', http:'Talks straight to each Tasmota by its IP. No broker needed.'};
+    const MH = {auto:'Uses MQTT. If no broker can be reached, talks to each Tasmota directly by its IP (home Wi-Fi only) — and back when MQTT returns.', mqtt:'Only through the MQTT broker.', http:'Talks straight to each Tasmota by its IP. No broker needed.'};
     const dm = () => { document.querySelectorAll('#sMode button').forEach(b=>b.classList.toggle('sel', b.dataset.mode===cfg.mode));
       $('#modeHint').textContent = MH[cfg.mode]; $('#mqttBox').style.display = cfg.mode==='http' ? 'none' : ''; };
     dm();
@@ -967,6 +1031,13 @@ function drawSetup(){
     $('#sUrl').oninput = e=>{ cfg.url = e.target.value.trim(); saveCfg(); };
     $('#sUser').oninput = e=>{ cfg.user = e.target.value.trim(); saveCfg(); };
     $('#sPass').oninput = e=>{ cfg.pass = e.target.value; saveCfg(); };
+    $('#sAway').oninput = e=>{ cfg.awayUrl = e.target.value.trim(); saveCfg(); };
+    $('#sAwayUser').oninput = e=>{ cfg.awayUser = e.target.value.trim(); saveCfg(); };
+    $('#sAwayPass').oninput = e=>{ cfg.awayPass = e.target.value; saveCfg(); };
+    const BH = {auto:'Tries the Home broker first. If it is not reachable within a few seconds (you are out), it uses the Away broker — and checks Home again whenever you open the app.',
+                home:'Only the Home broker (works on your home Wi-Fi).', away:'Only the Away broker (works anywhere with internet).'};
+    const db = () => { document.querySelectorAll('#sBroker button').forEach(b=>b.classList.toggle('sel', b.dataset.broker===cfg.broker)); $('#brokerHint').textContent = BH[cfg.broker]; };
+    db(); $('#sBroker').onclick = e=>{ const b = e.target.closest('[data-broker]'); if(b){ cfg.broker = b.dataset.broker; saveCfg(); db(); } };
   } else {
     B.innerHTML = `<label>Home name</label><input type="text" id="gName" value="${esc(home.name)}" maxlength="30">
       <label class="tgl"><span>Keep screen on<small>Screen never sleeps while the app is open</small></span><input type="checkbox" id="gAwake" ${cfg.awake?'checked':''}><span class="sw"></span></label>
@@ -1038,7 +1109,8 @@ $('#setBody').addEventListener('click', e=>{
 $('#setDone').onclick = closeSetup;
 function closeSetup(){
   $('#setOv').classList.remove('show'); render();
-  if(setupSnap !== JSON.stringify([cfg.url, cfg.user, cfg.pass, cfg.mode, home.ctls])){ Object.keys(power).forEach(k=>delete power[k]); render(); connect(); }
+  cfg.url = appUrl(cfg.url); cfg.awayUrl = appUrl(cfg.awayUrl); saveCfg();
+  if(setupSnap !== JSON.stringify(connKey())){ Object.keys(power).forEach(k=>delete power[k]); render(); connect(); }
   else if(mqttUp()) subscribeAll();
 }
 
@@ -1162,11 +1234,17 @@ window.handleBack = function(){
   if(cfg.scope !== 'all'){ cfg.scope = 'all'; saveCfg(); render(); return true; }
   return false;
 };
-window.onAppResume = function(){
-  if(mqttUp()) subscribeAll(); else if(client && cfg.mode !== 'http'){ try{ client.reconnect(); }catch(e){ connect(); } }
+function recheck(){                       // app opened again: if on Away (or not connected), try Home first again
+  if(cfg.mode === 'http'){ schedulePoll(0); return; }
+  if(!mqttUp() || (active === 'away' && brokerPlan().length > 1)) connect();
+  else subscribeAll();
   schedulePoll(0);
-};
-document.addEventListener('visibilitychange', ()=>{ if(document.hidden) return; applyAwake(); if(mqttUp()) subscribeAll(); schedulePoll(0); });
+}
+let lastRecheck = 0;
+function recheckOnce(){ const n = Date.now(); if(n - lastRecheck > 1500){ lastRecheck = n; recheck(); } }
+window.onAppResume = recheckOnce;
+document.addEventListener('visibilitychange', ()=>{ if(document.hidden) return; applyAwake(); recheckOnce(); });
+window.addEventListener('online', ()=>{ if(active !== 'home') recheckOnce(); });
 
 applyAwake();
 render(); connect();

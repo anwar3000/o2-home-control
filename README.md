@@ -11,7 +11,24 @@ Android app + iPhone/iPad web app to control a whole home built on Tasmota relay
 
 ## Setup in the app
 ⚙ **Setup → Controllers**: add controller → pick topic `o2/villa/NN` → enter its IP (for Direct) → switch on relays used → name + room.
-⚙ **Setup → Rooms**: add/rename/reorder rooms. **Connection**: broker `192.168.10.5:1883` (app) / `ws://192.168.10.5:1884` (browser).
+⚙ **Setup → Rooms**: add/rename/reorder rooms.
+⚙ **Setup → Connection → Which broker**:
+- **Home broker** (home Wi-Fi): `192.168.10.5:1883` (app) / `ws://192.168.10.5:1884` (browser)
+- **Away broker** (internet): `mqtts://your-broker:8883` (app, TLS) / `wss://your-broker:8884/mqtt` (browser) + username/password
+- **Auto** tries Home first (4 s), then Away; re-checks Home whenever the app is opened; switches to Away 8 s after the home connection drops.
+
+### Away broker: bridge your home broker to a cloud broker
+Keep the Tasmotas on the home broker and mirror the `o2/` topics to the cloud broker (Mosquitto on 192.168.10.5, e.g. `/etc/mosquitto/conf.d/bridge.conf`):
+```
+connection cloud
+address your-broker.com:8883
+bridge_capath /etc/ssl/certs
+remote_username <user>
+remote_password <password>
+topic cmnd/o2/# in 0
+topic stat/o2/# out 0
+topic tele/o2/# out 0
+```
 Long-press any device for icon, colour, strip shape, room or relay changes. On a map, tap ✥ to arrange.
 
 ## Android

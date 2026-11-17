@@ -102,8 +102,8 @@ public class MainActivity extends Activity {
             });
         }
 
-        @JavascriptInterface public void mqttConnect(String host, int port, String user, String pass, String clientId) {
-            mqtt.connect(host, port, user, pass, clientId);
+        @JavascriptInterface public void mqttConnect(String host, int port, boolean tls, String user, String pass, String clientId) {
+            mqtt.connect(host, port, tls, user, pass, clientId);
         }
         @JavascriptInterface public void mqttPublish(String topic, String payload) { mqtt.publish(topic, payload); }
         @JavascriptInterface public void mqttSubscribe(String topic) { mqtt.subscribe(topic); }
