@@ -48,6 +48,42 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .icb svg{width:21px;height:21px}
 .tabs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:10px -16px 0;padding:0 16px 10px}
 .tabs::-webkit-scrollbar{display:none}
+.roombar{display:flex;align-items:stretch;gap:8px;margin-top:10px;padding-bottom:10px}
+.rb-arrow{width:48px;flex:none;border-radius:16px;background:var(--card);border:1px solid var(--line);display:grid;place-items:center;color:#e9edf5}
+.rb-arrow svg{width:22px;height:22px}
+.rb-arrow:disabled{opacity:.3}
+.rb-arrow:active{transform:scale(.94)}
+.rb-cur{flex:1;min-width:0;min-height:56px;display:flex;align-items:center;gap:12px;padding:8px 12px 8px 8px;border-radius:16px;background:var(--card);
+  border:1px solid var(--line);text-align:left;position:relative}
+.rb-cur:active{transform:scale(.98)}
+.rb-ic{width:40px;height:40px;flex:none;border-radius:12px;display:grid;place-items:center;background:#232b3b;color:#c3cad8}
+.rb-cur.live .rb-ic{background:var(--gold);color:#0b0e16}
+.rb-tx{flex:1;min-width:0}
+.rb-tx b{display:block;font-size:17px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
+.rb-tx small{display:block;font-size:12.5px;color:var(--mute);margin-top:1px}
+.rb-cur.live .rb-tx small{color:var(--gold)}
+.rb-chev{color:var(--mute);flex:none}.rb-chev svg{width:20px;height:20px}
+.rb-dots{position:absolute;left:0;right:0;bottom:4px;display:flex;justify-content:center;gap:4px;pointer-events:none}
+.rb-dots i{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.18)}
+.rb-dots i.sel{background:#fff;width:12px;border-radius:3px}
+.rgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+.rcard{min-height:108px;padding:14px;border-radius:18px;background:#0d111b;border:1px solid var(--line);text-align:left;display:flex;flex-direction:column;justify-content:space-between;gap:10px}
+.rcard:active{transform:scale(.97)}
+.rcard .rc-ic{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:#1e2536;color:#c3cad8}
+.rcard b{font-size:16px;font-weight:700;display:block;line-height:1.2}
+.rcard small{display:block;font-size:12.5px;color:var(--mute);margin-top:3px}
+.rcard.live .rc-ic{background:var(--gold);color:#0b0e16}
+.rcard.live small{color:var(--gold)}
+.rcard.sel{background:#f4f6fa;border-color:#f4f6fa}
+.rcard.sel b{color:#0d111b}.rcard.sel small{color:#4b5466}
+.rcard.sel .rc-ic{background:#0d111b;color:#fff}
+.sh .shl{display:flex;align-items:center;gap:6px;padding:4px 2px;margin:-4px -2px;border-radius:10px;min-height:40px;background:none;border:0;color:var(--text);font-size:inherit}
+.shl svg{width:18px;height:18px;color:var(--mute)}
+.shl:active{opacity:.6}
+#main.slideL{animation:slideL .25s ease-out}
+#main.slideR{animation:slideR .25s ease-out}
+@keyframes slideL{from{transform:translateX(28px);opacity:.3}}
+@keyframes slideR{from{transform:translateX(-28px);opacity:.3}}
 .rt{flex:none;height:36px;padding:0 14px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:14px;font-weight:600;
   color:var(--mute);display:flex;align-items:center;gap:7px;white-space:nowrap}
 .rt.sel{background:#fff;color:#0b0e16;border-color:#fff}
@@ -304,6 +340,8 @@ code{font-size:12px;background:rgba(255,255,255,.07);padding:1px 6px;border-radi
   :root{--s:54px;--strip:42px}
   .bar{padding-left:24px;padding-right:24px}
   .tabs{margin:10px -24px 0;padding:0 24px 10px}
+  .rgrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .roombar{max-width:640px}
   .wrap{padding-left:24px;padding-right:24px}
   .quick{margin:6px -24px 4px;padding:2px 24px 4px}
   .rows{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
@@ -340,7 +378,7 @@ code{font-size:12px;background:rgba(255,255,255,.07);padding:1px 6px;border-radi
     <button class="icb" id="viewBtn" aria-label="Switch between buttons and map"></button>
     <button class="icb" id="setBtn" aria-label="Setup"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
   </div>
-  <nav class="tabs" id="tabs"></nav>
+  <nav class="roombar" id="roombar" aria-label="Choose room"></nav>
 </header>
 
 <div class="wrap" id="app">
@@ -353,6 +391,15 @@ code{font-size:12px;background:rgba(255,255,255,.07);padding:1px 6px;border-radi
   <span class="eq"><i></i><i></i><i></i><i></i></span>
   <span class="mtx"><b>Music mode</b><small id="mbTxt"></small></span>
   <button id="mbOpen">Options</button><button id="mbStop">Stop</button>
+</div>
+
+<!-- room picker -->
+<div class="ov" id="roomOv" role="dialog" aria-label="Choose a room">
+  <div class="sheet">
+    <div class="grab"></div>
+    <h2>Rooms</h2>
+    <div class="rgrid" id="rgrid"></div>
+  </div>
 </div>
 
 <!-- setup -->
@@ -464,6 +511,15 @@ const ICONS = {
   move:`<path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/>`,
   up:`<path d="M6 15l6-6 6 6"/>`, down:`<path d="M6 9l6 6 6-6"/>`,
   trash:`<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>`,
+  left:`<path d="M15 6l-6 6 6 6"/>`, right:`<path d="M9 6l6 6-6 6"/>`,
+  bed:`<path d="M3 18V7M3 13h18v5M21 18v-3a3 3 0 0 0-3-3h-7v4"/><circle cx="7" cy="10.5" r="1.8"/>`,
+  kitchen:`<path d="M4 10h16v3a6 6 0 0 1-6 6h-4a6 6 0 0 1-6-6z"/><path d="M2 10h20M9 6.5c0-1 1-1.5 1-2.5M13 6.5c0-1 1-1.5 1-2.5"/>`,
+  bath:`<path d="M4 12h16v2a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M6 12V5a2 2 0 0 1 4 0M7 19l-1 2M17 19l1 2"/>`,
+  sofa:`<path d="M5 11V8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3"/><path d="M3 13a2 2 0 0 1 4 0v2h10v-2a2 2 0 0 1 4 0v4H3z"/><path d="M5 17v2M19 17v2"/>`,
+  tree:`<path d="M12 22v-6"/><path d="M12 2l5 7h-3l4 6H6l4-6H7z"/>`,
+  car:`<path d="M5 17h14v-4l-2-5H7l-2 5z"/><circle cx="8" cy="17" r="1.6"/><circle cx="16" cy="17" r="1.6"/>`,
+  desk:`<path d="M3 9h18M5 9v11M19 9v11M14 9v6h5"/><rect x="7" y="3" width="8" height="6" rx="1"/>`,
+  dining:`<path d="M7 3v7a2 2 0 0 0 4 0V3M9 3v18M16 3c-2 1-2 6 0 7v11"/>`,
   house:`<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>`,
   globe:`<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/>`,
   pen:`<path d="M4 20h4L19 9l-4-4L4 16z"/>`, plus:`<path d="M12 5v14M5 12h14"/>`,
@@ -526,11 +582,8 @@ function render(){
   $('#homeName').textContent = home.name || 'My Home';
   document.title = home.name || 'O2 Home';
   if(cfg.scope !== 'all' && !roomById(cfg.scope) && !(cfg.scope === '' && inRoom('').length)) cfg.scope = 'all';
-  // room tabs
   const hasUnassigned = inRoom('').length > 0;
-  const tabs = [{id:'all', name:'All'}, ...home.rooms, ...(hasUnassigned ? [{id:'', name:'Other'}] : [])];
-  $('#tabs').innerHTML = tabs.map(r=>{ const list = r.id==='all' ? used() : inRoom(r.id);
-    return `<button class="rt ${cfg.scope===r.id?'sel':''} ${onCount(list)?'live':''}" data-scope="${esc(r.id)}"><i></i>${esc(r.name)}</button>`; }).join('');
+  drawRoomBar();
   // view button shows the other view
   $('#viewBtn').innerHTML = icon(cfg.view==='map' ? 'grid' : 'map');
   // quick actions for current scope
@@ -562,7 +615,7 @@ function render(){
   } else {
     if(inAll){
       main.innerHTML = roomsToShow.map(r=>{ const list = inRoom(r.id), n = onCount(list);
-        return `<div class="sec" data-sec="${esc(r.id)}"><div class="sh"><span><b>${esc(r.name)}</b><small>${n ? n+' on' : ''}</small></span>
+        return `<div class="sec" data-sec="${esc(r.id)}"><div class="sh"><button class="shl" data-scope="${esc(r.id)}" aria-label="Open ${esc(r.name)}"><b>${esc(r.name)}</b><small>${n ? n+' on' : ''}</small>${icon('right')}</button>
           <button class="soff" data-roomoff="${esc(r.id)}">${icon('power')}Turn off</button></div><div class="rows">${list.map(tileHTML).join('')}</div></div>`; }).join('');
     } else {
       main.innerHTML = `<div class="rows" style="margin-top:12px">${inRoom(roomsToShow[0].id).map(tileHTML).join('')}</div>`;
@@ -583,8 +636,53 @@ function updateDevice(k){
   document.querySelectorAll(`.room[data-room="${CSS.escape(d.room||'')}"]`).forEach(roomFx);
   refreshCounts(); status();
 }
+/* ---- rooms: big room bar (‹ name ›), room picker sheet, swipe ---- */
+function scopes(){ return [{id:'all', name:'All rooms'}, ...home.rooms, ...(inRoom('').length ? [{id:'', name:'Other'}] : [])]; }
+const scopeList = id => id === 'all' ? used() : inRoom(id);
+function roomIcon(r){
+  if(r.id === 'all') return 'house';
+  const n = (r.name || '').toLowerCase();
+  if(/bed|guest|kids|child|maid/.test(n)) return 'bed';
+  if(/kitch|pantry/.test(n)) return 'kitchen';
+  if(/bath|toilet|wash|wc|shower/.test(n)) return 'bath';
+  if(/dining/.test(n)) return 'dining';
+  if(/out|garden|yard|terrace|balcon|roof|pool|gate|lawn/.test(n)) return 'tree';
+  if(/garage|car|park/.test(n)) return 'car';
+  if(/office|study|work|desk/.test(n)) return 'desk';
+  if(/living|lounge|hall|majlis|sitting|family|tv|cinema|theat/.test(n)) return 'sofa';
+  return 'door';
+}
+const countTxt = list => { const n = onCount(list); return list.length ? (n ? `${n} of ${list.length} on` : `All off · ${list.length}`) : 'No devices'; };
+function drawRoomBar(){
+  const sc = scopes(), i = Math.max(0, sc.findIndex(r=>r.id===cfg.scope)), r = sc[i], list = scopeList(r.id);
+  $('#roombar').innerHTML = `
+    <button class="rb-arrow" data-step="-1" aria-label="Previous room" ${i<=0?'disabled':''}>${icon('left')}</button>
+    <button class="rb-cur ${onCount(list)?'live':''}" id="roomPick" aria-haspopup="dialog" aria-label="Room: ${esc(r.name)}. Tap to choose another room">
+      <span class="rb-ic">${icon(roomIcon(r))}</span>
+      <span class="rb-tx"><b>${esc(r.name)}</b><small>${countTxt(list)}</small></span>
+      <span class="rb-dots">${sc.map((_,k)=>`<i class="${k===i?'sel':''}"></i>`).join('')}</span>
+      <span class="rb-chev">${icon('down')}</span>
+    </button>
+    <button class="rb-arrow" data-step="1" aria-label="Next room" ${i>=sc.length-1?'disabled':''}>${icon('right')}</button>`;
+}
+function drawRoomPicker(){
+  $('#rgrid').innerHTML = scopes().map(r=>{ const list = scopeList(r.id), n = onCount(list);
+    return `<button class="rcard ${cfg.scope===r.id?'sel':''} ${n?'live':''}" data-scope="${esc(r.id)}">
+      <span class="rc-ic">${icon(roomIcon(r))}</span><b>${esc(r.name)}</b><small>${countTxt(list)}</small></button>`; }).join('');
+}
+function stepRoom(dir){
+  const sc = scopes(), i = sc.findIndex(r=>r.id===cfg.scope), j = clamp((i < 0 ? 0 : i) + dir, 0, sc.length - 1);
+  if(j === i) return;
+  cfg.scope = sc[j].id; saveCfg(); vib(8); render();
+  const m = $('#main'); m.classList.remove('slideL','slideR'); void m.offsetWidth; m.classList.add(dir > 0 ? 'slideL' : 'slideR');
+}
+let sw = null;                     // swipe left/right on the content to change room
+document.addEventListener('touchstart', e=>{ if(editing || e.touches.length !== 1 || !e.target.closest('#app') || e.target.closest('.room')) { sw = null; return; }
+  sw = {x: e.touches[0].clientX, y: e.touches[0].clientY, t: Date.now()}; }, {passive:true});
+document.addEventListener('touchend', e=>{ if(!sw) return; const t = e.changedTouches[0], dx = t.clientX - sw.x, dy = t.clientY - sw.y, dt = Date.now() - sw.t; sw = null;
+  if(Math.abs(dx) > 70 && Math.abs(dx) > 2 * Math.abs(dy) && dt < 700){ if(press){ clearTimeout(press.timer); press = null; } stepRoom(dx < 0 ? 1 : -1); } }, {passive:true});
 function refreshCounts(){
-  document.querySelectorAll('.rt[data-scope]').forEach(b=>{ const id = b.dataset.scope; b.classList.toggle('live', !!onCount(id==='all' ? used() : inRoom(id))); });
+  drawRoomBar(); if($('#roomOv').classList.contains('show')) drawRoomPicker();
   document.querySelectorAll('[data-sec],[data-card]').forEach(s=>{ const id = s.dataset.sec ?? s.dataset.card, sm = s.querySelector('.sh small');
     if(sm){ const n = onCount(inRoom(id)); sm.textContent = n ? n+' on' : ''; } });
 }
@@ -897,8 +995,10 @@ document.addEventListener('contextmenu', e=>{ if(e.target.closest('.row, .spot')
 document.addEventListener('click', e=>{
   const t = e.target.closest('#main .row, .spot');
   if(t){ if(e.detail === 0) activate(t.dataset.id); return; }
+  if(e.target.closest('#roomPick')){ drawRoomPicker(); $('#roomOv').classList.add('show'); return; }
+  const st = e.target.closest('[data-step]'); if(st){ stepRoom(+st.dataset.step); return; }
   const sc = e.target.closest('[data-scope]');
-  if(sc){ cfg.scope = sc.dataset.scope; saveCfg(); render(); window.scrollTo({top:0, behavior:'smooth'}); return; }
+  if(sc){ cfg.scope = sc.dataset.scope; saveCfg(); $('#roomOv').classList.remove('show'); vib(8); render(); window.scrollTo({top:0, behavior:'smooth'}); return; }
   if(e.target.closest('[data-arrange]')){ setEditing(true); return; }
   const so = e.target.closest('[data-open-setup]'); if(so){ openSetup(so.dataset.openSetup); return; }
   const ro = e.target.closest('[data-roomoff]');
