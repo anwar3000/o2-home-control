@@ -45,9 +45,11 @@ Brand assets: `brand/` (O2 gold #D4AF37).
 
 ## Device types
 - **Switch** — any relay (lights, AC, fan, TV, projector, water heater, cat's washroom …). The icon is picked from the name.
-- **Gate** — Open / Half open / Close buttons. Each button sends ON or OFF to a relay on the same controller
-  (long-press the gate → Type: Gate → choose relay + ON/OFF per button). For a pulse, set `PulseTime` on that relay in Tasmota.
-  *All off* and *Room off* never send anything to gate relays.
+- **Gate** — Setup → Controllers → *+ Add gate* (its own device, not tied to one relay). Per button:
+  - **Open**: relay A **ON** + relay B **OFF** (default 7 ON, 8 OFF) · **Close**: relay B **ON** + relay A **OFF** (8 ON, 7 OFF) — OFF is sent first, then ON.
+  - 1-second pulse: set it in Tasmota, e.g. `PulseTime7 10`, `PulseTime8 10`.
+  - **Half open**: only publishes an MQTT message (default `o2/gate/half` → `ON`); Node-RED does the timing.
+  - *All off* and *Room off* never send anything to gate relays.
 - **Garden watering (Node-RED)** — Setup → Controllers → *+ Add garden watering*. The app talks to a dedicated topic:
   - app → `o2/garden/watering/set`: `{"cmd":"start","minutes":10}`, `{"cmd":"stop"}`, `{"cmd":"auto","on":true}`, `{"cmd":"get"}`
   - Node-RED → `o2/garden/watering/state` (retained): `{"state":"ON","until":<epoch ms>,"auto":true,"schedule":"06:00 · 15 min"}`
