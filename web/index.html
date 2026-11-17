@@ -144,6 +144,25 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .row.on .pen{background:#0b0e16}
 .editing .row .pen{display:grid}
 .editing .row .pw{display:none}
+.row.wide{grid-column:span 2;grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:auto auto;min-height:0;align-items:center;gap:12px}
+.row.wide .ic{grid-column:1;grid-row:1}
+.row.wide .tx{grid-column:2;grid-row:1;align-self:center}
+.row.wide .pen{grid-column:3;grid-row:1}
+.row.wide .acts{grid-column:1 / -1;grid-row:2;display:flex;gap:8px}
+.row.wide .acts button{flex:1;min-height:46px;border-radius:13px;background:#232b3b;color:#e9edf5;font-weight:650;font-size:14.5px;padding:0 8px}
+.row.wide .acts button.pri{background:var(--c);color:#0b0e16}
+.row.wide .acts button:active{transform:scale(.96)}
+.row.wide.on .acts button{background:#e3e7ef;color:#0d111b}
+.row.wide.on .acts button.pri{background:#0d111b;color:#fff}
+.row.wide.offline .acts{pointer-events:none}
+.gbig{display:grid;gap:10px;margin-top:14px}
+.gbig .btn{min-height:60px;font-size:17px}
+.gact{display:grid;grid-template-columns:92px minmax(0,1fr) 86px;gap:8px;align-items:center;margin-top:8px}
+.gact b{font-size:14px}
+.relay.lock{grid-template-columns:24px minmax(0,1fr)}
+.relay.lock .lt{font-size:13px;color:var(--mute);padding:10px 0}
+.wl{flex:1;min-width:0;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:#0d111b;border:1px solid var(--line)}
+.wl svg{width:20px;height:20px;color:#34d399;flex:none}.wl b{font-size:14px}.wl small{color:var(--mute);font-size:12px;margin-left:auto}
 
 /* ---------- maps ---------- */
 .mapgrid{display:grid;gap:14px;grid-template-columns:1fr}
@@ -423,12 +442,28 @@ code{font-size:12px;background:rgba(255,255,255,.07);padding:1px 6px;border-radi
     <div class="grab"></div>
     <h2>Edit device</h2>
     <label>Name</label>
-    <input id="eName" maxlength="30">
+    <input id="eName" maxlength="30" list="devNames">
+    <label>Type</label>
+    <div class="segs" id="eKind"><button data-kind="switch">Switch</button><button data-kind="gate">Gate</button><button data-kind="water">Watering</button></div>
     <label>Room</label>
     <select id="eRoom"></select>
-    <div class="two">
+    <div class="two" id="eRelayBox">
       <div><label>Controller</label><select id="eCtl"></select></div>
-      <div><label>Relay</label><select id="eCh"></select></div>
+      <div id="eChBox"><label>Relay</label><select id="eCh"></select></div>
+    </div>
+    <div id="eGateBox">
+      <label>Gate buttons</label>
+      <div class="hint">Each button sends ON or OFF to a relay on the controller above. For a short pulse, set <code>PulseTime</code> on that relay in Tasmota.</div>
+      <div class="gact"><b>Open</b><select data-ga="open" data-f="ch"></select><select data-ga="open" data-f="cmd"><option>ON</option><option>OFF</option></select></div>
+      <div class="gact"><b>Half open</b><select data-ga="half" data-f="ch"></select><select data-ga="half" data-f="cmd"><option>ON</option><option>OFF</option></select></div>
+      <div class="gact"><b>Close</b><select data-ga="close" data-f="ch"></select><select data-ga="close" data-f="cmd"><option>ON</option><option>OFF</option></select></div>
+    </div>
+    <div id="eWaterBox">
+      <label>MQTT topic (Node-RED)</label>
+      <input id="eTopic" placeholder="o2/garden/watering" autocapitalize="off" spellcheck="false">
+      <div class="hint">The app sends commands to <code>&lt;topic&gt;/set</code> and shows the status Node-RED publishes on <code>&lt;topic&gt;/state</code>.</div>
+      <label>Default run time (minutes)</label>
+      <input id="eMin" type="number" min="1" max="120" inputmode="numeric">
     </div>
     <label>Shape on map</label>
     <div class="segs" id="eShape">
@@ -448,6 +483,28 @@ code{font-size:12px;background:rgba(255,255,255,.07);padding:1px 6px;border-radi
     </div>
   </div>
 </div>
+
+<!-- gate -->
+<div class="ov" id="gateOv" role="dialog">
+  <div class="sheet">
+    <div class="grab"></div>
+    <h2 id="gTitle"></h2><p class="sub" id="gLast"></p>
+    <div class="gbig" id="gBtns"></div>
+  </div>
+</div>
+<!-- garden watering -->
+<div class="ov" id="waterOv" role="dialog">
+  <div class="sheet">
+    <div class="grab"></div>
+    <h2 id="wTitle"></h2><p class="sub" id="wStatus"></p>
+    <label>Run for</label>
+    <div class="chips" id="wMins"></div>
+    <div class="actions"><button class="btn danger" id="wStop">Stop</button><button class="btn pri" id="wStart">Start</button></div>
+    <label class="tgl"><span>Automatic schedule<small id="wSched"></small></span><input type="checkbox" id="wAuto"><span class="sw"></span></label>
+    <div class="hint">The schedule and safety limits run in Node-RED (topic <code id="wTopic"></code>), so they work even when the app is closed.</div>
+  </div>
+</div>
+<datalist id="devNames"></datalist>
 
 <!-- music -->
 <div class="ov" id="musicOv">
@@ -485,7 +542,7 @@ code{font-size:12px;background:rgba(255,255,255,.07);padding:1px 6px;border-radi
 /* =================== CONSTANTS =================== */
 const MAX_CTLS = 8, RELAYS = 8;
 const COLORS = ['#fbbf24','#facc15','#fb923c','#f472b6','#fb7185','#a78bfa','#7dd3fc','#38bdf8','#2dd4bf','#34d399','#a3e635','#e2e8f0'];
-const LIGHTS = new Set(['bulb','floor','wall','strip','spot','chandelier','outdoor']);
+const LIGHTS = new Set(['bulb','floor','wall','strip','spot','chandelier','outdoor','cove']);
 const ICONS = {
   bulb:`<g class="rays"><path d="M12 .5v1.3M3.5 4l1 1M20.5 4l-1 1M1 11.5h1.3M21.7 11.5H23"/></g><path d="M9 18h6M10 21h4"/><path d="M12 3.5a6 6 0 0 0-3.6 10.8c.7.5 1.1 1.3 1.1 2.1v.1h5v-.1c0-.8.4-1.6 1.1-2.1A6 6 0 0 0 12 3.5z"/>`,
   strip:`<path class="rays" d="M5 8V6M10 8V6M15 8V6M20 8V6M5 18v-2M10 18v-2M15 18v-2M20 18v-2"/><rect x="2" y="10" width="20" height="4" rx="2"/><path d="M6 12h.01M10 12h.01M14 12h.01M18 12h.01"/>`,
@@ -505,6 +562,11 @@ const ICONS = {
   curtain:`<path d="M3 3h18M5 3v18M19 3v18"/><path d="M5 3c3 4 3 14 0 18M19 3c-3 4-3 14 0 18"/>`,
   door:`<rect x="5" y="2" width="14" height="20" rx="1.5"/><circle cx="15" cy="12" r="1"/>`,
   pump:`<path d="M12 3s-6 7-6 11a6 6 0 0 0 12 0c0-4-6-11-6-11z"/>`,
+  cove:`<path class="rays" d="M5 15v2M9 15v2M15 15v2M19 15v2"/><path d="M2 5h20v4H2z"/><path d="M4 9v3h16V9"/>`,
+  cat:`<path d="M5 4l3 4h8l3-4v9a7 7 0 0 1-14 0z"/><circle cx="9.5" cy="12" r=".8"/><circle cx="14.5" cy="12" r=".8"/><path d="M12 14v1.5M10.5 16.5h3"/>`,
+  waterheater:`<rect x="6" y="2" width="12" height="17" rx="5"/><path d="M9 22v-3M15 22v-3"/><path class="flow" d="M12 7c-1.6 2-1.6 3.2 0 4.6 1.6-1.4 1.6-2.6 0-4.6z"/>`,
+  gate:`<path d="M3 21V4M21 21V4"/><path d="M3 8h18M3 18h18"/><path d="M7.5 8v10M12 8v10M16.5 8v10"/>`,
+  water:`<path d="M12 21v-5M8 21h8"/><circle cx="12" cy="13" r="3"/><path class="flow" d="M5 5l3 3M19 5l-3 3M12 2v4"/>`,
   power:`<path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.8 0"/>`,
   moon:`<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>`,
   music:`<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>`,
@@ -526,7 +588,36 @@ const ICONS = {
   globe:`<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/>`,
   pen:`<path d="M4 20h4L19 9l-4-4L4 16z"/>`, plus:`<path d="M12 5v14M5 12h14"/>`,
 };
-const PICK_ICONS = ['bulb','strip','spot','chandelier','floor','wall','outdoor','fan','ac','heater','projector','tv','speaker','socket','plug','curtain','door','pump'];
+const PICK_ICONS = ['bulb','spot','cove','strip','chandelier','floor','wall','outdoor','fan','ac','heater','waterheater','projector','tv','speaker','socket','plug','curtain','door','gate','water','pump','cat'];
+const NAME_SUGGEST = ['Spot Light','Cove Light 1','Cove Light 2','Fan','AC','TV','Projector','Floor Strip Light',"Cat's Washroom",'Water Heater','Gate',
+  'Ceiling Light','Chandelier','Wall Light','Floor Lamp','Exhaust Fan','Curtain','Socket','Garden Lights'];
+function iconFor(n){                 // pick an icon from the device name
+  n = (n || '').toLowerCase();
+  if(/gate/.test(n)) return 'gate';
+  if(/water ?heater|geyser|boiler/.test(n)) return 'waterheater';
+  if(/garden light|outdoor|porch/.test(n)) return 'outdoor';
+  if(/garden|sprinkl|irrigat|watering/.test(n)) return 'water';
+  if(/cat|litter|pet/.test(n)) return 'cat';
+  if(/cove/.test(n)) return 'cove';
+  if(/strip|\bled\b/.test(n)) return 'strip';
+  if(/spot/.test(n)) return 'spot';
+  if(/chandel/.test(n)) return 'chandelier';
+  if(/floor ?lamp/.test(n)) return 'floor';
+  if(/wall/.test(n)) return 'wall';
+  if(/\bac\b|a\/c|air ?con/.test(n)) return 'ac';
+  if(/fan|exhaust/.test(n)) return 'fan';
+  if(/projector/.test(n)) return 'projector';
+  if(/\btv\b|television/.test(n)) return 'tv';
+  if(/curtain|blind/.test(n)) return 'curtain';
+  if(/heater/.test(n)) return 'heater';
+  if(/socket|plug|outlet/.test(n)) return 'socket';
+  if(/speaker|sound|music|soundbar/.test(n)) return 'speaker';
+  if(/pump/.test(n)) return 'pump';
+  if(/door|lock/.test(n)) return 'door';
+  if(/light|lamp|bulb/.test(n)) return 'bulb';
+  return null;
+}
+const GATE_LBL = {open:'Open', half:'Half open', close:'Close'}, GATE_PAST = {open:'Opened', half:'Half opened', close:'Closed'};
 const icon = k => `<svg class="i" viewBox="0 0 24 24">${ICONS[k]||ICONS.plug}</svg>`;
 const LOGO = document.querySelector('.top .logo').src;
 
@@ -579,9 +670,10 @@ const cst = {};        // ctlId -> {lwt, seen, http, err}
 let client = null, editing = false, conn = {kind:'wait', txt:'Connecting…'}, lastToast = '';
 let gen = 0, active = null, activeUrl = '', failTimer = null;   // which broker is in use: 'home' | 'away'
 
-const keyOf = d => d.ctl + ':' + d.ch;
+const isGate = d => d.kind === 'gate', isWater = d => d.kind === 'water', isSwitch = d => !d.kind || d.kind === 'switch';
+const keyOf = d => isWater(d) ? 'w:' + d.id : d.ctl + ':' + d.ch;
 const ctlById = id => home.ctls.find(c=>c.id===id);
-const used = () => home.devices.filter(d=>d.used && ctlById(d.ctl));
+const used = () => home.devices.filter(d=>d.used && (isWater(d) || ctlById(d.ctl)));
 const devByKey = k => used().find(d=>keyOf(d)===k);
 const roomById = id => home.rooms.find(r=>r.id===id);
 const inRoom = rid => used().filter(d=>(d.room||'')===rid);
@@ -592,13 +684,39 @@ const C = id => (cst[id] = cst[id] || {lwt:null, seen:false, http:null, err:''})
 /* =================== RENDER =================== */
 const stateTxt = d => pending[keyOf(d)] ? 'Switching…' : power[keyOf(d)]==='ON' ? 'On' : power[keyOf(d)]==='OFF' ? 'Off' : 'No status';
 function ctlOnline(id){ const s = C(id); if(mqttUp()) return s.lwt === false ? false : (s.lwt || s.seen) ? true : null; return s.http; }
+const gateLast = store.get('hc.gate', {}), waterSt = {};
+function ago(t){ const s = (Date.now() - t) / 1000; if(s < 60) return 'just now'; if(s < 3600) return Math.floor(s/60) + ' min ago';
+  const d = new Date(t); return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); }
+function gateTxt(d){ const l = gateLast[d.id]; return l ? `${GATE_PAST[l.act]} · ${ago(l.t)}` : 'Ready'; }
+function waterTxt(d){
+  const s = waterSt[d.id];
+  if(!mqttUp()) return 'Needs MQTT (Node-RED)';
+  if(!s) return 'Waiting for Node-RED…';
+  if(String(s.state).toUpperCase() === 'ON'){
+    if(s.until){ const m = Math.max(0, Math.ceil((s.until - Date.now()) / 60000)); return `Watering · ${m} min left`; }
+    return 'Watering';
+  }
+  return `Off · Auto ${s.auto ? 'on' : 'off'}`;
+}
 function tileHTML(d){
+  if(isGate(d)){
+    const k = keyOf(d), off = ctlOnline(d.ctl) === false, A = d.actions || {};
+    return `<div class="row wide gate ${off?'offline':''}" role="group" aria-label="${esc(d.name)}" style="--c:${d.color}" data-k="${k}" data-id="${d.id}">
+      <span class="ic">${icon(d.icon || 'gate')}</span><span class="tx"><b>${esc(d.name)}</b><small>${off ? 'Offline' : gateTxt(d)}</small></span><span class="pen">${icon('pen')}</span>
+      <span class="acts">${['open','half','close'].filter(a=>A[a] && A[a].ch).map(a=>`<button data-gact="${a}" class="${a==='open'?'pri':''}">${GATE_LBL[a]}</button>`).join('')}</span></div>`;
+  }
+  if(isWater(d)){
+    const k = keyOf(d), on = power[k] === 'ON', off = !mqttUp();
+    return `<div class="row wide water ${on?'on':''} ${off?'offline':''}" role="group" aria-label="${esc(d.name)}" style="--c:${d.color}" data-k="${k}" data-id="${d.id}">
+      <span class="ic">${icon(d.icon || 'water')}</span><span class="tx"><b>${esc(d.name)}</b><small>${waterTxt(d)}</small></span><span class="pen">${icon('pen')}</span>
+      <span class="acts">${on ? `<button data-wact="stop" class="pri">Stop</button>` : `<button data-wact="start" class="pri">Start · ${d.minutes || 10} min</button>`}<button data-wact="more">Timer &amp; auto</button></span></div>`;
+  }
   const k = keyOf(d), st = power[k], off = ctlOnline(d.ctl) === false;
   return `<button class="row ${st==='ON'?'on':''} ${st?'':'unknown'} ${pending[k]?'pending':''} ${off?'offline':''}" style="--c:${d.color}" data-k="${k}" data-id="${d.id}" aria-pressed="${st==='ON'}">
     <span class="ic">${icon(d.icon)}</span><span class="pw"></span><span class="pen">${icon('pen')}</span>
     <span class="tx"><b>${esc(d.name)}</b><small>${off ? 'Offline' : stateTxt(d)}</small></span></button>`;
 }
-function onCount(list){ return list.filter(d=>power[keyOf(d)]==='ON').length; }
+function onCount(list){ return list.filter(d=>!isGate(d) && power[keyOf(d)]==='ON').length; }
 function render(){
   $('#homeName').textContent = home.name || 'My Home';
   document.title = home.name || 'O2 Home';
@@ -711,7 +829,7 @@ function refreshCounts(){
 }
 function status(){
   const all = used(), on = onCount(all);
-  const ids = [...new Set(all.map(d=>d.ctl))], online = ids.filter(id=>ctlOnline(id)).length;
+  const ids = [...new Set(all.filter(d=>!isWater(d)).map(d=>d.ctl))], online = ids.filter(id=>ctlOnline(id)).length;
   const tail = `${ids.length ? `${online}/${ids.length} online · ` : ''}${on} on`;
   let kind = conn.kind, txt = conn.txt;
   if(mqttUp()){ kind = online < ids.length && ids.some(id=>ctlOnline(id)===false) ? 'wait' : 'on'; txt = `${BLABEL[active] || 'MQTT'} · ${hostOf(activeUrl)} · ${tail}`; }
@@ -796,6 +914,7 @@ function setConn(kind, txt){ conn = {kind, txt}; status(); }
 const activeCtls = () => home.ctls.filter(c=>used().some(d=>d.ctl===c.id));
 function subscribeAll(){
   if(!mqttUp()) return;
+  used().filter(isWater).forEach(d=>{ client.subscribe(`${d.topic}/state`); client.publish(`${d.topic}/set`, JSON.stringify({cmd:'get'})); });
   activeCtls().forEach(c=>{ const b = c.topic;
     client.subscribe([`stat/${b}/+`, `tele/${b}/STATE`, `tele/${b}/LWT`]);
     client.publish(`cmnd/${b}/STATE`, ''); });
@@ -885,6 +1004,10 @@ function applyPower(ctlId, j){
 }
 function onMsg(topic, buf){
   const msg = buf.toString();
+  const w = used().find(d=>isWater(d) && topic === `${d.topic}/state`);
+  if(w){ let s; try{ s = JSON.parse(msg); }catch(e){ s = {state: norm(msg) || 'OFF'}; }
+    waterSt[w.id] = s; power[keyOf(w)] = String(s.state).toUpperCase() === 'ON' ? 'ON' : 'OFF'; updateDevice(keyOf(w));
+    if($('#waterOv').classList.contains('show') && sheetDev === w.id) drawWater(); return; }
   const c = home.ctls.find(c=>topic.startsWith(`stat/${c.topic}/`) || topic.startsWith(`tele/${c.topic}/`)); if(!c) return;
   const s = C(c.id), rest = topic.slice(topic.indexOf(c.topic) + c.topic.length + 1);
   if(topic.startsWith('tele/') && rest === 'LWT'){ s.lwt = /online/i.test(msg); render(); return; }
@@ -980,20 +1103,38 @@ async function runList(list, label){       // list of [device, cmd]
   for(const [d, cmd] of list){ if(power[keyOf(d)] !== cmd) send(d, cmd); await new Promise(r=>setTimeout(r, 90)); }
   if(label) toast(label);
 }
+function gateDo(d, act){
+  const a = (d.actions || {})[act], c = ctlById(d.ctl); if(!a || !a.ch || !c) return;
+  if(!canSendCtl(c)){ toast('Not connected'); return; }
+  vib(25); sendCtl(c, a.ch, a.cmd || 'ON');
+  gateLast[d.id] = {act, t: Date.now()}; store.set('hc.gate', gateLast);
+  toast(`${d.name}: ${GATE_LBL[act]}`); updateDevice(keyOf(d));
+}
+function waterCmd(d, obj){
+  if(!mqttUp()){ toast('Garden watering needs the MQTT broker (Node-RED)'); return; }
+  vib(20); client.publish(`${d.topic}/set`, JSON.stringify(obj));
+  toast(obj.cmd === 'start' ? `${d.name}: ${obj.minutes} min` : obj.cmd === 'stop' ? `${d.name}: stopped` : `${d.name}: auto ${obj.on ? 'on' : 'off'}`);
+}
+setInterval(()=>{ used().forEach(d=>{ if((isWater(d) && power[keyOf(d)]==='ON') || (isGate(d) && gateLast[d.id])) updateDevice(keyOf(d)); }); }, 20000);
 function allOff(){
   if(cfg.scope === 'all'){
-    vib(15); const ctls = activeCtls(); let ok = 0;
-    ctls.forEach((c,i)=>setTimeout(()=>{ if(sendCtl(c, 0, 'OFF')) ok++; }, i*100));
+    vib(15); const ctls = activeCtls(), gateCtls = new Set(used().filter(isGate).map(d=>d.ctl));
+    // controllers with a gate get individual OFFs (never touch gate relays); the rest get one POWER0 OFF
+    ctls.forEach((c,i)=>setTimeout(()=>{
+      if(gateCtls.has(c.id)) used().filter(d=>d.ctl===c.id && isSwitch(d)).forEach((d,j)=>setTimeout(()=>sendCtl(c, d.ch, 'OFF', true), j*80));
+      else sendCtl(c, 0, 'OFF'); }, i*120));
     setTimeout(()=>{ if(mqttUp()) subscribeAll(); else schedulePoll(0); }, ctls.length*100 + 600);
     toast('Everything off');
-  } else runList(scopeDevs().map(d=>[d,'OFF']), `${roomById(cfg.scope)?.name || 'Room'} off`);
+  } else runList(scopeDevs().filter(isSwitch).map(d=>[d,'OFF']), `${roomById(cfg.scope)?.name || 'Room'} off`);
 }
 
 /* =================== INPUT =================== */
 const vib = ms => { try{ if(APP) Android.vibrate(ms); else if(navigator.vibrate) navigator.vibrate(ms); }catch(e){} };
-function activate(id){
+function activate(id, act){
   const d = home.devices.find(x=>x.id===id); if(!d) return;
   if(editing){ openEditor(id); return; }
+  if(isGate(d)){ if(act) gateDo(d, act); else openGate(d); return; }
+  if(isWater(d)){ if(act === 'start') waterCmd(d, {cmd:'start', minutes: d.minutes || 10}); else if(act === 'stop') waterCmd(d, {cmd:'stop'}); else openWater(d); return; }
   vib(12); const st = power[keyOf(d)];
   send(d, st==='ON' ? 'OFF' : st==='OFF' ? 'ON' : 'TOGGLE');
 }
@@ -1001,7 +1142,8 @@ let press = null;
 document.addEventListener('pointerdown', e=>{
   const el = e.target.closest('#main .row, .spot');
   if(!el || (e.button && e.button !== 0)) return;
-  press = { el, id: el.dataset.id, pid: e.pointerId, x: e.clientX, y: e.clientY, moved:false, long:false,
+  const ab = e.target.closest('[data-gact],[data-wact]');
+  press = { el, id: el.dataset.id, act: ab ? (ab.dataset.gact || ab.dataset.wact) : null, pid: e.pointerId, x: e.clientX, y: e.clientY, moved:false, long:false,
             drag: editing && el.classList.contains('spot'), room: el.closest('.room') };
   if(press.drag){ try{ el.setPointerCapture(e.pointerId); }catch(_){} }
   press.timer = setTimeout(()=>{ if(press && !press.moved){ press.long = true; vib(35); openEditor(press.id); } }, 550);
@@ -1024,13 +1166,13 @@ document.addEventListener('pointerup', e=>{
     const d = home.devices.find(x=>x.id===p.id); d.x = +p.nx.toFixed(1); d.y = +p.ny.toFixed(1); saveHome();
     renderRoomCanvas(p.room); vib(10); return;
   }
-  if(!p.moved) activate(p.id);
+  if(!p.moved) activate(p.id, p.act);
 });
 document.addEventListener('pointercancel', ()=>{ if(press){ clearTimeout(press.timer); press = null; } });
 document.addEventListener('contextmenu', e=>{ if(e.target.closest('.row, .spot')) e.preventDefault(); });
 document.addEventListener('click', e=>{
   const t = e.target.closest('#main .row, .spot');
-  if(t){ if(e.detail === 0) activate(t.dataset.id); return; }
+  if(t){ if(e.detail === 0){ const ab = e.target.closest('[data-gact],[data-wact]'); activate(t.dataset.id, ab ? (ab.dataset.gact || ab.dataset.wact) : null); } return; }
   if(e.target.closest('#roomPick')){ drawRoomPicker(); $('#roomOv').classList.add('show'); return; }
   const st = e.target.closest('[data-step]'); if(st){ stepRoom(+st.dataset.step); return; }
   const sc = e.target.closest('[data-scope]');
@@ -1038,7 +1180,7 @@ document.addEventListener('click', e=>{
   if(e.target.closest('[data-arrange]')){ setEditing(true); return; }
   const so = e.target.closest('[data-open-setup]'); if(so){ openSetup(so.dataset.openSetup); return; }
   const ro = e.target.closest('[data-roomoff]');
-  if(ro){ runList(inRoom(ro.dataset.roomoff).map(d=>[d,'OFF']), `${roomById(ro.dataset.roomoff)?.name || 'Room'} off`); return; }
+  if(ro){ runList(inRoom(ro.dataset.roomoff).filter(isSwitch).map(d=>[d,'OFF']), `${roomById(ro.dataset.roomoff)?.name || 'Room'} off`); return; }
   if(e.target.closest('#musicBtn')){ openMusic(); return; }
   const qa = e.target.closest('[data-act]');
   if(qa){ const a = qa.dataset.act, L = scopeDevs().filter(isLight);
@@ -1053,10 +1195,18 @@ $('#setBtn').onclick = ()=> openSetup('rooms');
 
 /* =================== DEVICE EDITOR =================== */
 let draft = null, draftFromSetup = false;
-function relayTaken(ctl, ch, exceptId){ return home.devices.find(d=>d.used && d.ctl===ctl && d.ch===ch && d.id!==exceptId); }
+function relayOwner(ctl, ch, exceptId){          // who uses relay ch on controller ctl (switch, or one of a gate's buttons)
+  for(const d of home.devices){
+    if(!d.used || d.id === exceptId || isWater(d) || d.ctl !== ctl) continue;
+    if(isGate(d)){ for(const [k,a] of Object.entries(d.actions || {})) if(a && a.ch === ch) return {d, label: GATE_LBL[k]}; }
+    else if(d.ch === ch) return {d};
+  }
+  return null;
+}
+function relayTaken(ctl, ch, exceptId){ const o = relayOwner(ctl, ch, exceptId); return o ? o.d : null; }
 function openEditor(id){
   const d = home.devices.find(x=>x.id===id); if(!d) return;
-  draft = Object.assign({}, d); draftFromSetup = $('#setOv').classList.contains('show');
+  draft = JSON.parse(JSON.stringify(d)); draftFromSetup = $('#setOv').classList.contains('show');
   $('#eName').value = draft.name;
   $('#eRoom').innerHTML = `<option value="">— No room —</option>` + home.rooms.map(r=>`<option value="${esc(r.id)}" ${r.id===draft.room?'selected':''}>${esc(r.name)}</option>`).join('');
   $('#eCtl').innerHTML = home.ctls.map(c=>`<option value="${c.id}" ${c.id===draft.ctl?'selected':''}>${esc(c.topic)}</option>`).join('');
@@ -1067,6 +1217,22 @@ function drawCh(){
     return `<option value="${n}" ${n===draft.ch?'selected':''}>Relay ${n}${t ? ' · ' + esc(t.name) : ''}</option>`; }).join('');
 }
 function drawEditor(){
+  const kind = draft.kind || 'switch';
+  document.querySelectorAll('#eKind button').forEach(b=>b.classList.toggle('sel', b.dataset.kind === kind));
+  $('#eRelayBox').style.display = kind === 'water' ? 'none' : '';
+  $('#eChBox').style.display = kind === 'switch' ? '' : 'none';
+  $('#eGateBox').style.display = kind === 'gate' ? '' : 'none';
+  $('#eWaterBox').style.display = kind === 'water' ? '' : 'none';
+  $('#eDel').textContent = kind === 'water' ? 'Remove' : 'Not used';
+  if(kind === 'gate'){
+    const A = draft.actions;
+    document.querySelectorAll('#eGateBox select[data-f="ch"]').forEach(sel=>{ const ga = sel.dataset.ga;
+      sel.innerHTML = (ga === 'half' ? `<option value="0">Not used</option>` : `<option value="0">—</option>`)
+        + Array.from({length:RELAYS},(_,i)=>i+1).map(n=>{ const o = relayOwner(draft.ctl, n, draft.id);
+          return `<option value="${n}" ${A[ga] && A[ga].ch===n ? 'selected' : ''}>Relay ${n}${o ? ' · ' + esc(o.d.name) : ''}</option>`; }).join(''); });
+    document.querySelectorAll('#eGateBox select[data-f="cmd"]').forEach(sel=>{ sel.value = (A[sel.dataset.ga] || {}).cmd || 'ON'; });
+  }
+  if(kind === 'water'){ $('#eTopic').value = draft.topic || 'o2/garden/watering'; $('#eMin').value = draft.minutes || 10; }
   document.querySelectorAll('#eShape button').forEach(b=>b.classList.toggle('sel', (draft.shape||'')===b.dataset.shape));
   $('#eLenRow').style.display = draft.shape ? '' : 'none';
   $('#eLen').value = draft.len || 40; $('#eLenV').textContent = draft.len || 40;
@@ -1078,18 +1244,36 @@ function drawEditor(){
 }
 $('#eShape').onclick = e=>{ const b = e.target.closest('[data-shape]'); if(!b) return; draft.shape = b.dataset.shape; if(draft.shape && !draft.len) draft.len = 40; drawEditor(); };
 $('#eLen').oninput = e=>{ draft.len = +e.target.value; $('#eLenV').textContent = draft.len; };
-$('#eIcons').onclick = e=>{ const b = e.target.closest('[data-icon]'); if(b){ draft.icon = b.dataset.icon; drawEditor(); } };
+$('#eIcons').onclick = e=>{ const b = e.target.closest('[data-icon]'); if(b){ draft.icon = b.dataset.icon; draft.iconSet = true; drawEditor(); } };
+$('#eKind').onclick = e=>{ const b = e.target.closest('[data-kind]'); if(!b) return; const k = b.dataset.kind;
+  if(k === 'switch') delete draft.kind; else draft.kind = k;
+  if(k === 'gate'){ draft.actions = draft.actions || {open:{ch:draft.ch||1, cmd:'ON'}, close:{ch:draft.ch||1, cmd:'OFF'}, half:{ch:0, cmd:'ON'}}; if(!draft.iconSet) draft.icon = 'gate'; }
+  if(k === 'water'){ draft.topic = draft.topic || 'o2/garden/watering'; draft.minutes = draft.minutes || 10; if(!draft.iconSet) draft.icon = 'water'; }
+  drawEditor(); };
+$('#eGateBox').onchange = e=>{ const t = e.target; if(!t.dataset.ga) return; const a = draft.actions[t.dataset.ga] = draft.actions[t.dataset.ga] || {ch:0, cmd:'ON'};
+  if(t.dataset.f === 'ch') a.ch = +t.value; else a.cmd = t.value; drawEditor(); };
+$('#eTopic').oninput = e=>{ draft.topic = e.target.value.trim(); };
+$('#eMin').oninput = e=>{ draft.minutes = clamp(+e.target.value || 10, 1, 120); };
 $('#eColors').onclick = e=>{ const b = e.target.closest('[data-color]'); if(b){ draft.color = b.dataset.color; drawEditor(); } };
-$('#eName').oninput = e=>{ draft.name = e.target.value; };
+$('#eName').oninput = e=>{ draft.name = e.target.value; const before = draft.icon + (draft.kind||''); autoStyle(draft); if(before !== draft.icon + (draft.kind||'')) drawEditor(); };
 $('#eRoom').onchange = e=>{ if(draft.room !== e.target.value){ draft.room = e.target.value; draft.x = draft.y = null; } };
-$('#eCtl').onchange = e=>{ draft.ctl = e.target.value; drawCh(); };
+$('#eCtl').onchange = e=>{ draft.ctl = e.target.value; drawCh(); drawEditor(); };
 $('#eCh').onchange = e=>{ draft.ch = +e.target.value; };
 $('#eCancel').onclick = ()=> $('#editOv').classList.remove('show');
 $('#eDel').onclick = ()=>{ const d = home.devices.find(x=>x.id===draft.id); if(d){ d.used = false; saveHome(); }
   $('#editOv').classList.remove('show'); afterEdit(); toast('Relay marked not used'); };
 $('#eSave').onclick = ()=>{
-  const t = relayTaken(draft.ctl, draft.ch, draft.id);
-  if(t){ toast(`Relay ${draft.ch} is already used by ${t.name}`); return; }
+  if(isWater(draft)){
+    draft.topic = (draft.topic || '').trim().replace(/^\/+|\/+$/g,'') || 'o2/garden/watering'; draft.ctl = ''; draft.ch = 0;
+  } else if(isGate(draft)){
+    const A = draft.actions;
+    if(!(A.open && A.open.ch) && !(A.close && A.close.ch)){ toast('Pick a relay for Open or Close'); return; }
+    for(const k of ['open','half','close']){ const a = A[k]; if(a && a.ch){ const o = relayOwner(draft.ctl, a.ch, draft.id); if(o){ toast(`Relay ${a.ch} is already used by ${o.d.name}`); return; } } }
+    draft.ch = (A.open && A.open.ch) || A.close.ch;
+  } else {
+    const t = relayTaken(draft.ctl, draft.ch, draft.id);
+    if(t){ toast(`Relay ${draft.ch} is already used by ${t.name}`); return; }
+  }
   draft.name = draft.name.trim() || 'Device'; if(!draft.shape) delete draft.shape;
   const i = home.devices.findIndex(x=>x.id===draft.id); home.devices[i] = draft; saveHome();
   $('#editOv').classList.remove('show'); afterEdit(); toast('Saved');
@@ -1126,17 +1310,22 @@ function drawSetup(){
             <input type="text" value="${esc(c.ip)}" data-ctl-ip="${c.id}" placeholder="IP e.g. 192.168.10.72" inputmode="url" autocapitalize="off" spellcheck="false">
             <input type="password" value="${esc(c.webpass)}" data-ctl-pass="${c.id}" placeholder="Web password (if set)" autocomplete="off">
           </div>
-          ${Array.from({length:RELAYS},(_,i)=>i+1).map(n=>{ const d = home.devices.find(x=>x.ctl===c.id && x.ch===n && x.used);
+          ${Array.from({length:RELAYS},(_,i)=>i+1).map(n=>{ const o = relayOwner(c.id, n), d = o && !(isGate(o.d) && o.d.ch !== n) ? o.d : null;
+            if(o && !d) return `<div class="relay lock"><span class="n">${n}</span><span class="lt">${icon('gate')} ${esc(o.d.name)} · ${o.label} button</span></div>`;
             return `<div class="relay ${d?'':'off'}">
               <span class="n">${n}</span>
               <label class="tg"><input type="checkbox" data-relay="${c.id}:${n}" ${d?'checked':''}><span class="sw"></span></label>
-              <input type="text" value="${esc(d ? d.name : '')}" placeholder="Relay ${n}" data-relay-name="${c.id}:${n}" maxlength="30">
+              <input type="text" value="${esc(d ? d.name : '')}" placeholder="Relay ${n}" data-relay-name="${c.id}:${n}" maxlength="30" list="devNames">
               <select data-relay-room="${c.id}:${n}"><option value="">No room</option>${home.rooms.map(r=>`<option value="${r.id}" ${d && d.room===r.id?'selected':''}>${esc(r.name)}</option>`).join('')}</select>
               <button class="ed" data-relay-edit="${d ? d.id : ''}" aria-label="Icon and colour">${d ? icon(d.icon) : icon('pen')}</button>
             </div>`; }).join('')}
         </div>`; }).join('')
       + (home.ctls.length < MAX_CTLS ? `<div class="actions" style="margin-top:14px"><button class="btn" data-ctl-add>+ Add controller</button></div>` : '')
-      + `<div class="small-note">Topic is the Tasmota “Full topic” name: commands go to <code>cmnd/&lt;topic&gt;/POWERn</code>.</div>`;
+      + `<div class="small-note">Topic is the Tasmota “Full topic” name: commands go to <code>cmnd/&lt;topic&gt;/POWERn</code>. Name a relay “Gate” to get Open / Half open / Close buttons (long-press it to set the relays).</div>`
+      + `<label style="margin-top:24px">Node-RED devices</label>`
+      + used().filter(isWater).map(d=>`<div class="lrow"><span class="wl">${icon('water')}<b>${esc(d.name)}</b><small>${esc(d.topic)}</small></span>
+          <button class="icb" data-relay-edit="${d.id}" aria-label="Edit">${icon('pen')}</button></div>`).join('')
+      + `<div class="actions" style="margin-top:10px"><button class="btn" data-water-add>+ Add garden watering</button></div>`;
   } else if(stab === 'conn'){
     B.innerHTML = `<label>Connection</label>
       <div class="segs" id="sMode"><button data-mode="auto">Auto</button><button data-mode="mqtt">MQTT</button><button data-mode="http">Direct</button></div>
@@ -1209,7 +1398,8 @@ $('#setBody').addEventListener('input', e=>{
   else if(ds.ctlPass){ ctlById(ds.ctlPass).webpass = t.value; saveHome(); }
   else if(ds.ctlCustom){ ctlById(ds.ctlCustom).topic = t.value.trim().replace(/^\/+|\/+$/g,''); saveHome(); }
   else if(ds.relayName){ const [cid, n] = ds.relayName.split(':'), d = home.devices.find(x=>x.ctl===cid && x.ch===+n && x.used);
-    if(d){ d.name = t.value.trim() || `Relay ${n}`; saveHome(); } }
+    if(d){ d.name = t.value.trim() || `Relay ${n}`; autoStyle(d); saveHome();
+      const ed = t.closest('.relay') && t.closest('.relay').querySelector('.ed'); if(ed) ed.innerHTML = icon(d.icon); } }
 });
 $('#setBody').addEventListener('change', e=>{
   const t = e.target, ds = t.dataset;
@@ -1223,6 +1413,8 @@ $('#setBody').addEventListener('change', e=>{
       if(!d){ const idx = home.devices.length;
         d = {id: uid('d'), ctl: cid, ch, used: true, name: `Relay ${ch}`, room: (cfg.scope!=='all' && roomById(cfg.scope)) ? cfg.scope : (home.rooms[0]?.id || ''),
              icon: 'bulb', color: COLORS[idx % COLORS.length], x: null, y: null};
+        const nm = t.closest('.relay') && t.closest('.relay').querySelector('[data-relay-name]');
+        if(nm && nm.value.trim()){ d.name = nm.value.trim(); autoStyle(d); }
         home.devices.push(d); }
       else d.used = true;
     } else if(d) d.used = false;
@@ -1247,6 +1439,11 @@ $('#setBody').addEventListener('click', e=>{
     if(!confirm(`Remove controller ${c.topic}${n ? ` and its ${n} device(s)` : ''}?`)) return;
     home.ctls = home.ctls.filter(x=>x.id!==c.id); home.devices = home.devices.filter(d=>d.ctl!==c.id); saveHome(); drawSetup(); }
   else if(ds.relayEdit){ openEditor(ds.relayEdit); }
+  else if('waterAdd' in ds){
+    const d = {id: uid('d'), kind:'water', used:true, name:'Garden Watering', ctl:'', ch:0, topic:'o2/garden/watering', minutes:10,
+               room: home.rooms.find(r=>/garden|out/i.test(r.name))?.id || (cfg.scope !== 'all' && roomById(cfg.scope) ? cfg.scope : (home.rooms[0]?.id || '')),
+               icon:'water', color:'#34d399', x:null, y:null};
+    home.devices.push(d); saveHome(); drawSetup(); openEditor(d.id); }
 });
 $('#setDone').onclick = closeSetup;
 function closeSetup(){
@@ -1254,6 +1451,37 @@ function closeSetup(){
   cfg.url = appUrl(cfg.url); cfg.awayUrl = appUrl(cfg.awayUrl, true); saveCfg();
   if(setupSnap !== JSON.stringify(connKey())){ Object.keys(power).forEach(k=>delete power[k]); render(); connect(); }
   else if(mqttUp()) subscribeAll();
+}
+
+/* =================== GATE / WATERING SHEETS =================== */
+let sheetDev = null, wMin = 10;
+function openGate(d){
+  sheetDev = d.id; $('#gTitle').textContent = d.name; $('#gLast').textContent = gateTxt(d);
+  const A = d.actions || {};
+  $('#gBtns').innerHTML = ['open','half','close'].filter(a=>A[a] && A[a].ch).map(a=>`<button class="btn ${a==='open'?'pri':''}" data-gact="${a}">${GATE_LBL[a]}</button>`).join('');
+  $('#gateOv').classList.add('show');
+}
+$('#gBtns').onclick = e=>{ const b = e.target.closest('[data-gact]'); const d = home.devices.find(x=>x.id===sheetDev);
+  if(b && d){ gateDo(d, b.dataset.gact); $('#gateOv').classList.remove('show'); } };
+function openWater(d){ sheetDev = d.id; wMin = d.minutes || 10; drawWater(); $('#waterOv').classList.add('show'); }
+function drawWater(){
+  const d = home.devices.find(x=>x.id===sheetDev); if(!d) return; const s = waterSt[d.id] || {};
+  $('#wTitle').textContent = d.name; $('#wStatus').textContent = waterTxt(d);
+  $('#wMins').innerHTML = [5,10,15,20,30,45,60].map(m=>`<button data-min="${m}" style="--c:#34d399" class="${m===wMin?'sel':''}">${m} min</button>`).join('');
+  $('#wAuto').checked = !!s.auto; $('#wSched').textContent = s.schedule ? `Node-RED schedule: ${s.schedule}` : 'Set the times in Node-RED';
+  $('#wTopic').textContent = d.topic;
+}
+$('#wMins').onclick = e=>{ const b = e.target.closest('[data-min]'); if(b){ wMin = +b.dataset.min; drawWater(); } };
+$('#wStart').onclick = ()=>{ const d = home.devices.find(x=>x.id===sheetDev); if(d){ waterCmd(d, {cmd:'start', minutes: wMin}); $('#waterOv').classList.remove('show'); } };
+$('#wStop').onclick = ()=>{ const d = home.devices.find(x=>x.id===sheetDev); if(d){ waterCmd(d, {cmd:'stop'}); $('#waterOv').classList.remove('show'); } };
+$('#wAuto').onchange = e=>{ const d = home.devices.find(x=>x.id===sheetDev); if(d) waterCmd(d, {cmd:'auto', on: e.target.checked}); };
+$('#devNames').innerHTML = NAME_SUGGEST.map(n=>`<option value="${esc(n)}">`).join('');
+function autoStyle(d){                 // icon (and gate type / strip shape) from the name, until an icon is picked by hand
+  if(d.iconSet) return; const ic = iconFor(d.name); if(!ic || ic === 'water') return;
+  d.icon = ic;
+  if(ic === 'gate' && !isGate(d)){ d.kind = 'gate'; d.actions = d.actions || {open:{ch:d.ch, cmd:'ON'}, close:{ch:d.ch, cmd:'OFF'}, half:{ch:0, cmd:'ON'}}; }
+  if(ic !== 'gate' && isGate(d)) delete d.kind;
+  if((ic === 'strip' || ic === 'cove') && !d.shape){ d.shape = 'h'; d.len = 40; }
 }
 
 /* =================== MUSIC MODE =================== */

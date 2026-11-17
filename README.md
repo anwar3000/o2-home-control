@@ -42,3 +42,13 @@ curl -fsSL https://raw.githubusercontent.com/anwar3000/o2-home-control/main/inst
 Then Safari → Share → Add to Home Screen.
 
 Brand assets: `brand/` (O2 gold #D4AF37).
+
+## Device types
+- **Switch** — any relay (lights, AC, fan, TV, projector, water heater, cat's washroom …). The icon is picked from the name.
+- **Gate** — Open / Half open / Close buttons. Each button sends ON or OFF to a relay on the same controller
+  (long-press the gate → Type: Gate → choose relay + ON/OFF per button). For a pulse, set `PulseTime` on that relay in Tasmota.
+  *All off* and *Room off* never send anything to gate relays.
+- **Garden watering (Node-RED)** — Setup → Controllers → *+ Add garden watering*. The app talks to a dedicated topic:
+  - app → `o2/garden/watering/set`: `{"cmd":"start","minutes":10}`, `{"cmd":"stop"}`, `{"cmd":"auto","on":true}`, `{"cmd":"get"}`
+  - Node-RED → `o2/garden/watering/state` (retained): `{"state":"ON","until":<epoch ms>,"auto":true,"schedule":"06:00 · 15 min"}`
+  - Ready-made flow: `node-red/garden-watering-flow.json` (Node-RED → Menu → Import). Edit the relay topic and schedule at the top of the *Garden watering* function.

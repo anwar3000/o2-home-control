@@ -1,0 +1,156 @@
+[
+ {
+  "id": "o2w_tab",
+  "type": "tab",
+  "label": "O2 Garden Watering",
+  "disabled": false,
+  "info": "Garden watering for the O2 Home app.\nApp \u2192 o2/garden/watering/set (JSON)\nNode-RED \u2192 o2/garden/watering/state (retained JSON)\nEdit the settings at the top of the 'Garden watering' function."
+ },
+ {
+  "id": "o2w_broker",
+  "type": "mqtt-broker",
+  "name": "Local MQTT",
+  "broker": "localhost",
+  "port": "1883",
+  "clientid": "",
+  "autoConnect": true,
+  "usetls": false,
+  "protocolVersion": "4",
+  "keepalive": "60",
+  "cleansession": true,
+  "autoUnsubscribe": true,
+  "birthTopic": "",
+  "closeTopic": "",
+  "willTopic": ""
+ },
+ {
+  "id": "o2w_in_set",
+  "type": "mqtt in",
+  "z": "o2w_tab",
+  "name": "App commands",
+  "topic": "o2/garden/watering/set",
+  "qos": "1",
+  "datatype": "json",
+  "broker": "o2w_broker",
+  "nl": false,
+  "rap": true,
+  "rh": 0,
+  "inputs": 0,
+  "x": 150,
+  "y": 100,
+  "wires": [
+   [
+    "o2w_fn"
+   ]
+  ]
+ },
+ {
+  "id": "o2w_in_stat",
+  "type": "mqtt in",
+  "z": "o2w_tab",
+  "name": "Relay status",
+  "topic": "stat/o2/villa/08/POWER1",
+  "qos": "0",
+  "datatype": "utf8",
+  "broker": "o2w_broker",
+  "nl": false,
+  "rap": true,
+  "rh": 0,
+  "inputs": 0,
+  "x": 140,
+  "y": 160,
+  "wires": [
+   [
+    "o2w_fn"
+   ]
+  ]
+ },
+ {
+  "id": "o2w_tick",
+  "type": "inject",
+  "z": "o2w_tab",
+  "name": "every 20 s",
+  "props": [
+   {
+    "p": "topic",
+    "vt": "str"
+   },
+   {
+    "p": "payload"
+   }
+  ],
+  "repeat": "20",
+  "crontab": "",
+  "once": true,
+  "onceDelay": "3",
+  "topic": "tick",
+  "payload": "",
+  "payloadType": "date",
+  "x": 140,
+  "y": 220,
+  "wires": [
+   [
+    "o2w_fn"
+   ]
+  ]
+ },
+ {
+  "id": "o2w_fn",
+  "type": "function",
+  "z": "o2w_tab",
+  "name": "Garden watering",
+  "func": "// ===== Garden watering \u2014 edit these =====\nconst RELAY_CMND  = 'cmnd/o2/villa/08/POWER1';   // Tasmota relay that opens the valve / runs the pump\nconst RELAY_STAT  = 'stat/o2/villa/08/POWER1';   // same relay's status topic\nconst STATE_TOPIC = 'o2/garden/watering/state';   // the app listens here\nconst SCHEDULE = [                                // used when Auto is on (24-hour time)\n    { time: '06:00', minutes: 15 },\n    { time: '18:30', minutes: 10 },\n];\nconst MAX_MINUTES = 120;                          // safety limit for one run\n// =========================================\n\nlet st = flow.get('water') || { state: 'OFF', until: null, auto: true, lastRun: '' };\nconst relay = [];\nconst now = Date.now();\nfunction start(min) {\n    min = Math.max(1, Math.min(MAX_MINUTES, Math.round(Number(min) || 10)));\n    st.state = 'ON'; st.until = now + min * 60000; relay.push({ topic: RELAY_CMND, payload: 'ON' });\n}\nfunction stop() { st.state = 'OFF'; st.until = null; relay.push({ topic: RELAY_CMND, payload: 'OFF' }); }\n\nif (msg.topic === RELAY_STAT) {                       // relay changed (app, button, Tasmota timer\u2026)\n    const on = String(msg.payload).toUpperCase() === 'ON';\n    if (on && st.state !== 'ON') { st.state = 'ON'; st.until = st.until || now + 30 * 60000; }   // safety stop after 30 min\n    if (!on && st.state === 'ON') { st.state = 'OFF'; st.until = null; }\n} else if (msg.topic === 'tick') {                    // every 20 s: end of run + schedule\n    if (st.state === 'ON' && st.until && now >= st.until) stop();\n    if (st.auto) {\n        const d = new Date(), hm = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');\n        const key = d.toDateString() + ' ' + hm, s = SCHEDULE.find(x => x.time === hm);\n        if (s && st.lastRun !== key && st.state !== 'ON') { st.lastRun = key; start(s.minutes); }\n    }\n} else {                                              // command from the app: {\"cmd\":\"start\",\"minutes\":10} | stop | auto | get\n    let c = msg.payload;\n    if (typeof c === 'string') { try { c = JSON.parse(c); } catch (e) { c = { cmd: c }; } }\n    if (c.cmd === 'start') start(c.minutes);\n    else if (c.cmd === 'stop') stop();\n    else if (c.cmd === 'auto') st.auto = !!c.on;\n}\nflow.set('water', st);\nconst state = { topic: STATE_TOPIC, retain: true, payload: {\n    state: st.state, until: st.until, auto: st.auto,\n    schedule: SCHEDULE.map(x => x.time + ' \u00b7 ' + x.minutes + ' min').join(', '), updated: now } };\nreturn [relay.length ? relay : null, state];",
+  "outputs": 2,
+  "timeout": 0,
+  "noerr": 0,
+  "initialize": "",
+  "finalize": "",
+  "libs": [],
+  "x": 400,
+  "y": 160,
+  "wires": [
+   [
+    "o2w_out_relay"
+   ],
+   [
+    "o2w_out_state"
+   ]
+  ]
+ },
+ {
+  "id": "o2w_out_relay",
+  "type": "mqtt out",
+  "z": "o2w_tab",
+  "name": "Tasmota relay",
+  "topic": "",
+  "qos": "0",
+  "retain": "false",
+  "respTopic": "",
+  "contentType": "",
+  "userProps": "",
+  "correl": "",
+  "expiry": "",
+  "broker": "o2w_broker",
+  "x": 640,
+  "y": 120,
+  "wires": []
+ },
+ {
+  "id": "o2w_out_state",
+  "type": "mqtt out",
+  "z": "o2w_tab",
+  "name": "State \u2192 app",
+  "topic": "",
+  "qos": "1",
+  "retain": "",
+  "respTopic": "",
+  "contentType": "",
+  "userProps": "",
+  "correl": "",
+  "expiry": "",
+  "broker": "o2w_broker",
+  "x": 640,
+  "y": 200,
+  "wires": []
+ }
+]
