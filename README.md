@@ -29,7 +29,8 @@ topic cmnd/o2/# in 0
 topic stat/o2/# out 0
 topic tele/o2/# out 0
 ```
-Long-press any device for icon, colour, strip shape, room or relay changes. On a map, tap ✥ to arrange.
+Long-press any device for icon, colour, strip shape, room or relay changes.
+**Arrange** (quick button): drag ⠿ to reorder buttons, tap the size chip for Small / Normal / Wide; on a map drag the icons.
 
 ## Android
 Push to `main` → GitHub Actions builds a signed APK → **Releases** → download on the phone and install.
