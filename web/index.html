@@ -26,7 +26,11 @@
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--text)}
-body{min-height:100vh;min-height:100dvh}
+body{min-height:100vh;min-height:100dvh;
+  background:radial-gradient(900px 520px at -10% -10%,rgba(212,175,55,.09),transparent 60%),
+             radial-gradient(800px 520px at 110% 0%,rgba(125,211,252,.07),transparent 60%),
+             radial-gradient(900px 600px at 50% 120%,rgba(167,139,250,.06),transparent 60%),var(--bg);background-attachment:fixed}
+.nologo .top .logo{display:none}
 button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer}
 svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
 
@@ -36,7 +40,7 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .top{display:flex;align-items:center;gap:10px}
 .top .logo{height:28px;width:auto;flex:none;display:block}
 .top .t{flex:1;min-width:0}
-.top h1{margin:0;font-size:21px;font-weight:750;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top h1{margin:0;font-size:23px;font-weight:750;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .status{display:flex;align-items:center;gap:7px;margin-top:2px;font-size:12.5px;color:var(--mute);white-space:nowrap;overflow:hidden}
 .status span:last-child{overflow:hidden;text-overflow:ellipsis}
 .dot{width:8px;height:8px;border-radius:50%;background:#64748b;flex:none}
@@ -372,6 +376,64 @@ code{font-size:12px;background:rgba(255,255,255,.07);padding:1px 6px;border-radi
   max-width:calc(100% - 32px);text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.45)}
 .toast.show{transform:translate(-50%,0);opacity:1}
 .editing .toast,.music .toast{bottom:calc(env(safe-area-inset-bottom) + 96px)}
+
+/* ===== inside a room: large buttons ===== */
+.room-large:not(.scope-all) .rows{gap:12px}
+.room-large:not(.scope-all) .row:not(.sz-s):not(.wide){min-height:148px;padding:16px;border-radius:24px}
+.room-large:not(.scope-all) .row:not(.sz-s) .ic{width:52px;height:52px}
+.room-large:not(.scope-all) .row:not(.sz-s) .ic svg{width:27px;height:27px}
+.room-large:not(.scope-all) .row:not(.sz-s) b{font-size:17px}
+.room-large:not(.scope-all) .row:not(.sz-s) small{font-size:13.5px}
+.room-large:not(.scope-all) .row .pw{width:44px;height:26px}
+.room-large:not(.scope-all) .row .pw::after{width:20px;height:20px}
+.room-large:not(.scope-all) .row.on .pw::after{left:21px}
+.room-large:not(.scope-all) .row.sz-s{min-height:118px;border-radius:22px}
+.room-large:not(.scope-all) .row.sz-s .ic{width:46px;height:46px}
+.room-large:not(.scope-all) .row.sz-s b{font-size:13.5px}
+.room-large:not(.scope-all) .row.wide{padding:16px;border-radius:24px}
+.room-large:not(.scope-all) .row.wide .acts button{min-height:52px;font-size:15.5px}
+/* ===== all rooms: compact buttons ===== */
+.scope-all.all-compact .rows{gap:8px}
+.scope-all.all-compact .row.sz-s{min-height:84px;padding:9px 4px;gap:6px;border-radius:16px}
+.scope-all.all-compact .row.sz-s .ic{width:34px;height:34px}
+.scope-all.all-compact .row.sz-s .ic svg{width:18px;height:18px}
+.scope-all.all-compact .row.sz-s b{font-size:11.5px;font-weight:600}
+.scope-all.all-compact .sec{margin-top:14px}
+.scope-all.all-compact .sh{margin-bottom:8px}
+.scope-all.all-compact .sh b{font-size:15px}
+@media (min-width:600px){ .scope-all.all-compact .rows{grid-template-columns:repeat(auto-fill,minmax(92px,1fr))} }
+@media (min-width:600px){ .room-large:not(.scope-all) .rows{grid-template-columns:repeat(auto-fill,minmax(112px,1fr))} .room-large:not(.scope-all) .split .rows{grid-template-columns:repeat(4,minmax(0,1fr))} }
+
+/* ===== style: Colour ===== */
+.style-color .row{background:linear-gradient(160deg,rgba(255,255,255,.065),rgba(255,255,255,.02));border-color:rgba(255,255,255,.08);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.style-color .row .ic{background:rgba(255,255,255,.07);color:#d6dbe6}
+.style-color .row.on{background:linear-gradient(150deg,color-mix(in srgb,var(--c) 96%,#fff),color-mix(in srgb,var(--c) 72%,#000));border-color:transparent;
+  box-shadow:0 14px 34px -14px var(--c),inset 0 1px 0 rgba(255,255,255,.35)}
+.style-color .row.on .ic{background:rgba(255,255,255,.32);color:#0b0e16;box-shadow:none}
+.style-color .row.on b{color:#0b0e16}
+.style-color .row.on small{color:rgba(11,14,22,.68)}
+.style-color .row.on .pw{background:rgba(0,0,0,.28)}
+.style-color .row.on .lv{background:rgba(0,0,0,.16)}
+.style-color .row.on .lv i{color:rgba(11,14,22,.6)}
+.style-color .row.lvl-low .lv i[data-lv=low],.style-color .row.lvl-high .lv i[data-lv=high]{background:#0b0e16;color:#fff}
+.style-color .row.wide.on .acts button{background:rgba(0,0,0,.16);color:#0b0e16}
+.style-color .row.wide.on .acts button.pri{background:#0b0e16;color:#fff}
+.style-color .row.on .grip{background:rgba(0,0,0,.35)}
+/* ===== style: Minimal ===== */
+.style-minimal .row{background:transparent;border:1.5px solid rgba(255,255,255,.1);box-shadow:none}
+.style-minimal .row .ic{background:transparent;border:1.5px solid rgba(255,255,255,.14)}
+.style-minimal .row.on{background:color-mix(in srgb,var(--c) 10%,transparent);border-color:var(--c);box-shadow:none}
+.style-minimal .row.on .ic{background:transparent;border-color:var(--c);color:var(--c);box-shadow:none}
+.style-minimal .row.on b{color:#fff}
+.style-minimal .row.on small{color:var(--c)}
+.style-minimal .row.on .pw{background:var(--c)}
+.style-minimal .row.on .lv{background:rgba(255,255,255,.06)}
+.style-minimal .row.on .lv i{color:#aab3c5}
+.style-minimal .row.lvl-low .lv i[data-lv=low],.style-minimal .row.lvl-high .lv i[data-lv=high]{background:var(--c);color:#0b0e16}
+.style-minimal .row.wide.on .acts button{background:rgba(255,255,255,.08);color:#fff}
+.style-minimal .row.wide.on .acts button.pri{background:var(--c);color:#0b0e16}
+.style-minimal .row.on .grip{background:#2a3244}
 
 @keyframes rot{to{transform:rotate(360deg)}}
 @keyframes flow{0%,100%{opacity:.25}50%{opacity:1}}
@@ -710,7 +772,8 @@ function normGate(d){              // upgrade the earlier one-relay gate format
 (home.devices || []).forEach(d=>{ if(d.kind === 'gate') normGate(d); });
 let cfg = Object.assign({url:defUrl, user:'', pass:'',                 // Home broker (on home Wi-Fi)
   awayUrl:'', awayUser:'', awayPass:'',                                  // Away broker (public / cloud, over the internet)
-  broker:'auto', mode:'auto', awake:true, view:'buttons', scope:'all'}, store.get('hc.cfg', {}));
+  broker:'auto', mode:'auto', awake:true, view:'buttons', scope:'all',
+  allSize:'compact', roomSize:'large', style:'color', logo:false}, store.get('hc.cfg', {}));
 const saveHome = () => store.set('hc.home', home);
 const saveCfg  = () => store.set('hc.cfg', cfg);
 
@@ -754,7 +817,15 @@ function waterTxt(d){
   }
   return `Off · Auto ${s.auto ? 'on' : 'off'}`;
 }
+const compactNow = () => cfg.scope === 'all' && cfg.allSize !== 'normal';
 function tileHTML(d){
+  if(compactNow()){                     // All rooms: small buttons, icon + name; gate / watering open their controls
+    const k = keyOf(d), on = devOn(d), off = isWater(d) ? !mqttUp() : ctlOnline(d.ctl) === false;
+    const st = isGate(d) ? gateTxt(d) : isWater(d) ? waterTxt(d) : isDual(d) ? ({high:'High', low:'Low', off:'Off'}[level(d)] || 'No status') : stateTxt(d);
+    const unk = !isGate(d) && !isWater(d) && (isDual(d) ? level(d) === null : !power[k]);
+    return `<button class="row sz-s ${on?'on':''} ${unk?'unknown':''} ${pending[k]?'pending':''} ${off?'offline':''}" style="--c:${d.color}" data-k="${k}" data-id="${d.id}" aria-label="${esc(d.name)}: ${esc(off ? 'Offline' : st)}">
+      <span class="ic">${icon(d.icon)}</span><span class="tx"><b>${esc(d.name)}</b></span>${ARR(d, true)}</button>`;
+  }
   if(isGate(d)){
     const k = keyOf(d), off = ctlOnline(d.ctl) === false, A = d.actions || {};
     return `<div class="row wide gate ${off?'offline':''}" role="group" aria-label="${esc(d.name)}" style="--c:${d.color}" data-k="${k}" data-id="${d.id}">
@@ -781,11 +852,20 @@ function tileHTML(d){
 function onCount(list){ return list.filter(devOn).length; }
 const SIZE_LBL = {s:'Small', m:'Normal', l:'Wide'};
 const sizeOf = d => (isGate(d) || isWater(d)) ? 'l' : (d.size || 'm');
-const ARR = d => `<span class="grip" data-grip aria-label="Drag to move">${icon('grip')}</span>` + ((isGate(d) || isWater(d)) ? '' : `<span class="szb" data-size>${SIZE_LBL[sizeOf(d)]}</span>`);
+const ARR = (d, compact) => `<span class="grip" data-grip aria-label="Drag to move">${icon('grip')}</span>` + ((compact || isGate(d) || isWater(d)) ? '' : `<span class="szb" data-size>${SIZE_LBL[sizeOf(d)]}</span>`);
+function applyLook(){
+  const b = document.body;
+  b.classList.toggle('scope-all', cfg.scope === 'all');
+  b.classList.toggle('all-compact', cfg.allSize !== 'normal');
+  b.classList.toggle('room-large', cfg.roomSize !== 'normal');
+  ['color','bright','minimal'].forEach(x=>b.classList.toggle('style-' + x, (cfg.style || 'color') === x));
+  b.classList.toggle('nologo', !cfg.logo);
+}
 function render(){
   $('#homeName').textContent = home.name || 'My Home';
   document.title = home.name || 'O2 Home';
   if(cfg.scope !== 'all' && !roomById(cfg.scope) && !(cfg.scope === '' && inRoom('').length)) cfg.scope = 'all';
+  applyLook();
   const hasUnassigned = inRoom('').length > 0;
   drawRoomBar();
   // view button shows the other view
@@ -1524,7 +1604,13 @@ function drawSetup(){
     const db = () => { document.querySelectorAll('#sBroker button').forEach(b=>b.classList.toggle('sel', b.dataset.broker===cfg.broker)); $('#brokerHint').textContent = BH[cfg.broker]; };
     db(); $('#sBroker').onclick = e=>{ const b = e.target.closest('[data-broker]'); if(b){ cfg.broker = b.dataset.broker; saveCfg(); db(); } };
   } else {
+    const seg = (id, val, opts) => `<div class="segs" id="${id}">${opts.map(([v,l])=>`<button data-v="${v}" class="${val===v?'sel':''}">${l}</button>`).join('')}</div>`;
     B.innerHTML = `<label>Home name</label><input type="text" id="gName" value="${esc(home.name)}" maxlength="30">
+      <label>All rooms – buttons</label>${seg('gAll', cfg.allSize, [['compact','Compact'],['normal','Normal']])}
+      <label>Inside a room – buttons</label>${seg('gRoom', cfg.roomSize, [['large','Large'],['normal','Normal']])}
+      <label>Button style</label>${seg('gStyle', cfg.style || 'color', [['color','Colour'],['bright','Bright'],['minimal','Minimal']])}
+      <div class="hint">Colour: buttons glow in their own colour when on · Bright: white when on · Minimal: clean outlines.</div>
+      <label class="tgl"><span>Show O2 logo<small>In the top bar</small></span><input type="checkbox" id="gLogo" ${cfg.logo?'checked':''}><span class="sw"></span></label>
       <label class="tgl"><span>Keep screen on<small>Screen never sleeps while the app is open</small></span><input type="checkbox" id="gAwake" ${cfg.awake?'checked':''}><span class="sw"></span></label>
       <label>Backup / copy setup to another phone</label>
       <textarea id="gJson" spellcheck="false"></textarea>
@@ -1534,6 +1620,10 @@ function drawSetup(){
     $('#gJson').value = JSON.stringify(home);
     $('#gName').oninput = e=>{ home.name = e.target.value.trim() || 'My Home'; saveHome(); };
     $('#gAwake').onchange = e=>{ cfg.awake = e.target.checked; saveCfg(); applyAwake(); };
+    const bindSeg = (id, key) => { $('#' + id).onclick = e=>{ const b = e.target.closest('[data-v]'); if(!b) return; cfg[key] = b.dataset.v; saveCfg();
+      document.querySelectorAll(`#${id} button`).forEach(x=>x.classList.toggle('sel', x === b)); render(); }; };
+    bindSeg('gAll', 'allSize'); bindSeg('gRoom', 'roomSize'); bindSeg('gStyle', 'style');
+    $('#gLogo').onchange = e=>{ cfg.logo = e.target.checked; saveCfg(); render(); };
     $('#gCopy').onclick = ()=>{ const t = $('#gJson'); t.select(); t.setSelectionRange(0, 1e7);
       (navigator.clipboard && window.isSecureContext ? navigator.clipboard.writeText(t.value) : Promise.reject()).then(()=>toast('Copied'))
         .catch(()=>{ try{ document.execCommand('copy'); toast('Copied'); }catch(e){ toast('Select the text and copy it'); } }); };
