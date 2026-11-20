@@ -420,6 +420,48 @@ code{font-size:12px;background:rgba(255,255,255,.07);padding:1px 6px;border-radi
 .style-color .row.wide.on .acts button{background:rgba(0,0,0,.16);color:#0b0e16}
 .style-color .row.wide.on .acts button.pri{background:#0b0e16;color:#fff}
 .style-color .row.on .grip{background:rgba(0,0,0,.35)}
+/* ===== style: Picture (big pictures that light up) ===== */
+.style-picture .row:not(.wide){display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;padding:16px 8px 14px;
+  background:linear-gradient(170deg,rgba(255,255,255,.05),rgba(255,255,255,.015));border-color:rgba(255,255,255,.07)}
+.style-picture .row:not(.wide) .ic{width:76px;height:76px;border-radius:26px;background:radial-gradient(circle at 50% 40%,rgba(255,255,255,.07),transparent 70%);color:#8f98ab}
+.style-picture .row:not(.wide) .ic svg{width:46px;height:46px;stroke-width:1.5;fill:color-mix(in srgb,currentColor 12%,transparent)}
+.style-picture .row:not(.wide) .tx{align-self:center;width:100%}
+.style-picture .row:not(.wide) b{font-size:14.5px;-webkit-line-clamp:2}
+.style-picture .row:not(.wide) small{display:none}
+.style-picture .row:not(.wide) .pw{position:absolute;top:12px;right:12px;width:10px;height:10px;border-radius:50%;background:#3a4256}
+.style-picture .row:not(.wide) .pw::after{display:none}
+.style-picture .row.on:not(.wide){background:radial-gradient(130% 95% at 50% 18%,color-mix(in srgb,var(--c) 34%,#151a26),#11151f 72%);
+  border-color:color-mix(in srgb,var(--c) 55%,transparent);box-shadow:0 14px 34px -16px var(--c)}
+.style-picture .row.on:not(.wide) .ic{background:radial-gradient(circle,color-mix(in srgb,var(--c) 45%,transparent),transparent 70%);color:color-mix(in srgb,var(--c) 70%,#fff);box-shadow:none}
+.style-picture .row.on:not(.wide) .ic svg{filter:drop-shadow(0 0 10px var(--c));fill:color-mix(in srgb,var(--c) 30%,transparent)}
+.style-picture .row.on:not(.wide) b{color:#fff}
+.style-picture .row.on:not(.wide) .pw{background:var(--c);box-shadow:0 0 10px var(--c)}
+.style-picture .row.dual:not(.wide) .lv{position:absolute;top:8px;right:8px}
+.style-picture .row.on .lv{background:rgba(0,0,0,.35)}
+.style-picture .row.on .lv i{color:#cfd6e4}
+.style-picture .row.lvl-low .lv i[data-lv=low],.style-picture .row.lvl-high .lv i[data-lv=high]{background:var(--c);color:#0b0e16}
+.style-picture .row.unknown .ic{opacity:.6}
+.style-picture .row.wide.on{background:radial-gradient(120% 120% at 10% 0%,color-mix(in srgb,var(--c) 30%,#151a26),#11151f 70%);border-color:color-mix(in srgb,var(--c) 50%,transparent)}
+.style-picture .row.wide.on b{color:#fff}.style-picture .row.wide.on small{color:var(--c)}
+.style-picture .row.wide.on .ic{background:var(--c);color:#0b0e16}
+.style-picture .row.wide.on .acts button{background:rgba(255,255,255,.1);color:#fff}
+.style-picture .row.wide.on .acts button.pri{background:var(--c);color:#0b0e16}
+/* picture sizes */
+.style-picture .row.sz-s .ic{width:52px;height:52px;border-radius:18px}
+.style-picture .row.sz-s .ic svg{width:32px;height:32px}
+.style-picture.scope-all.all-compact .row.sz-s{min-height:96px;gap:4px;padding:8px 4px}
+.style-picture.scope-all.all-compact .row.sz-s .ic{width:50px;height:50px}
+.style-picture.scope-all.all-compact .row.sz-s .ic svg{width:31px;height:31px}
+.style-picture.room-large:not(.scope-all) .row:not(.wide):not(.sz-s){min-height:168px}
+.style-picture.room-large:not(.scope-all) .row:not(.wide):not(.sz-s) .ic{width:92px;height:92px;border-radius:30px}
+.style-picture.room-large:not(.scope-all) .row:not(.wide):not(.sz-s) .ic svg{width:56px;height:56px}
+.style-picture.room-large:not(.scope-all) .row:not(.wide):not(.sz-s) b{font-size:16px}
+.style-picture.room-large:not(.scope-all) .row.sz-s .ic{width:60px;height:60px}
+.style-picture.room-large:not(.scope-all) .row.sz-s .ic svg{width:38px;height:38px}
+/* picture only (names hidden) */
+.nolabels .row:not(.wide) .tx{display:none}
+.nolabels.style-picture.scope-all.all-compact .row.sz-s{min-height:80px}
+.editing .row .tx{display:block}
 /* ===== style: Minimal ===== */
 .style-minimal .row{background:transparent;border:1.5px solid rgba(255,255,255,.1);box-shadow:none}
 .style-minimal .row .ic{background:transparent;border:1.5px solid rgba(255,255,255,.14)}
@@ -838,7 +880,8 @@ function normGate(d){              // upgrade the earlier one-relay gate format
 let cfg = Object.assign({url:defUrl, user:'', pass:'',                 // Home broker (on home Wi-Fi)
   awayUrl:'', awayUser:'', awayPass:'',                                  // Away broker (public / cloud, over the internet)
   broker:'auto', mode:'auto', awake:true, view:'buttons', scope:'all',
-  allSize:'compact', roomSize:'large', style:'color', logo:false}, store.get('hc.cfg', {}));
+  allSize:'compact', roomSize:'large', style:'picture', labels:true, logo:false}, store.get('hc.cfg', {}));
+if(!cfg.styleSet && cfg.style !== 'picture'){ cfg.style = 'picture'; }      // new default look until a style is picked by hand
 const saveHome = () => store.set('hc.home', home);
 const saveCfg  = () => store.set('hc.cfg', cfg);
 
@@ -905,12 +948,12 @@ function tileHTML(d){
   }
   if(isDual(d)){
     const k = keyOf(d), lv = level(d), off = ctlOnline(d.ctl) === false, on = lv === 'low' || lv === 'high';
-    return `<button class="row dual sz-${sizeOf(d)} ${on?'on':''} lvl-${lv||'none'} ${lv?'':'unknown'} ${pending[k]?'pending':''} ${off?'offline':''}" style="--c:${d.color}" data-k="${k}" data-id="${d.id}" aria-pressed="${on}">
+    return `<button aria-label="${esc(d.name)}" class="row dual sz-${sizeOf(d)} ${on?'on':''} lvl-${lv||'none'} ${lv?'':'unknown'} ${pending[k]?'pending':''} ${off?'offline':''}" style="--c:${d.color}" data-k="${k}" data-id="${d.id}" aria-pressed="${on}">
       <span class="ic">${icon(d.icon)}</span><span class="lv"><i data-lv="low">Low</i><i data-lv="high">High</i></span><span class="pen">${icon('pen')}</span>${ARR(d)}
       <span class="tx"><b>${esc(d.name)}</b><small>${off ? 'Offline' : pending[k] ? 'Switching…' : lv === 'high' ? 'High' : lv === 'low' ? 'Low' : lv === 'off' ? 'Off' : 'No status'}</small></span></button>`;
   }
   const k = keyOf(d), st = power[k], off = ctlOnline(d.ctl) === false;
-  return `<button class="row sz-${sizeOf(d)} ${st==='ON'?'on':''} ${st?'':'unknown'} ${pending[k]?'pending':''} ${off?'offline':''}" style="--c:${d.color}" data-k="${k}" data-id="${d.id}" aria-pressed="${st==='ON'}">
+  return `<button aria-label="${esc(d.name)}" class="row sz-${sizeOf(d)} ${st==='ON'?'on':''} ${st?'':'unknown'} ${pending[k]?'pending':''} ${off?'offline':''}" style="--c:${d.color}" data-k="${k}" data-id="${d.id}" aria-pressed="${st==='ON'}">
     <span class="ic">${icon(d.icon)}</span><span class="pw"></span><span class="pen">${icon('pen')}</span>${ARR(d)}
     <span class="tx"><b>${esc(d.name)}</b><small>${off ? 'Offline' : stateTxt(d)}</small></span></button>`;
 }
@@ -923,7 +966,8 @@ function applyLook(){
   b.classList.toggle('scope-all', cfg.scope === 'all');
   b.classList.toggle('all-compact', cfg.allSize !== 'normal');
   b.classList.toggle('room-large', cfg.roomSize !== 'normal');
-  ['color','bright','minimal'].forEach(x=>b.classList.toggle('style-' + x, (cfg.style || 'color') === x));
+  ['picture','color','bright','minimal'].forEach(x=>b.classList.toggle('style-' + x, (cfg.style || 'picture') === x));
+  b.classList.toggle('nolabels', cfg.labels === false);
   b.classList.toggle('nologo', !cfg.logo);
 }
 function render(){
@@ -1683,8 +1727,9 @@ function drawSetup(){
     B.innerHTML = `<label>Home name</label><input type="text" id="gName" value="${esc(home.name)}" maxlength="30">
       <label>All rooms – buttons</label>${seg('gAll', cfg.allSize, [['compact','Compact'],['normal','Normal']])}
       <label>Inside a room – buttons</label>${seg('gRoom', cfg.roomSize, [['large','Large'],['normal','Normal']])}
-      <label>Button style</label>${seg('gStyle', cfg.style || 'color', [['color','Colour'],['bright','Bright'],['minimal','Minimal']])}
-      <div class="hint">Colour: buttons glow in their own colour when on · Bright: white when on · Minimal: clean outlines.</div>
+      <label>Button style</label>${seg('gStyle', cfg.style || 'picture', [['picture','Picture'],['color','Colour'],['bright','Bright'],['minimal','Minimal']])}
+      <div class="hint">Picture: big pictures that light up · Colour: buttons glow in their own colour when on · Bright: white when on · Minimal: clean outlines.</div>
+      <label class="tgl"><span>Show names on buttons<small>Turn off for picture-only buttons</small></span><input type="checkbox" id="gLabels" ${cfg.labels!==false?'checked':''}><span class="sw"></span></label>
       <label class="tgl"><span>Show O2 logo<small>In the top bar</small></span><input type="checkbox" id="gLogo" ${cfg.logo?'checked':''}><span class="sw"></span></label>
       <label class="tgl"><span>Keep screen on<small>Screen never sleeps while the app is open</small></span><input type="checkbox" id="gAwake" ${cfg.awake?'checked':''}><span class="sw"></span></label>
       <label>Backup / copy setup to another phone</label>
@@ -1698,6 +1743,8 @@ function drawSetup(){
     const bindSeg = (id, key) => { $('#' + id).onclick = e=>{ const b = e.target.closest('[data-v]'); if(!b) return; cfg[key] = b.dataset.v; saveCfg();
       document.querySelectorAll(`#${id} button`).forEach(x=>x.classList.toggle('sel', x === b)); render(); }; };
     bindSeg('gAll', 'allSize'); bindSeg('gRoom', 'roomSize'); bindSeg('gStyle', 'style');
+    $('#gStyle').addEventListener('click', ()=>{ cfg.styleSet = true; saveCfg(); });
+    $('#gLabels').onchange = e=>{ cfg.labels = e.target.checked; saveCfg(); render(); };
     $('#gLogo').onchange = e=>{ cfg.logo = e.target.checked; saveCfg(); render(); };
     $('#gCopy').onclick = ()=>{ const t = $('#gJson'); t.select(); t.setSelectionRange(0, 1e7);
       (navigator.clipboard && window.isSecureContext ? navigator.clipboard.writeText(t.value) : Promise.reject()).then(()=>toast('Copied'))
