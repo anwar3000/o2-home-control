@@ -345,6 +345,48 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .gpl button svg{width:18px;height:18px}
 .gpl button small{opacity:.7;font-weight:500}
 .gpl button.sel{background:var(--c);color:#0b0e16;border-color:transparent}
+/* half-height group buttons */
+.grp.slim .gh{padding:12px 14px 10px;gap:12px}
+.grp.slim .gimg{width:46px;height:46px;border-radius:15px}
+.grp.slim .gimg svg{width:28px;height:28px}
+.grp.slim .gtx b{font-size:16.5px}
+.grp.slim .gtx small{font-size:12.5px;margin-top:2px}
+.grp .gact{display:flex;gap:8px;padding:0 12px 12px}
+.grp .gact button{flex:1;min-width:0;min-height:54px;border-radius:15px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07);color:#cfd5e1;
+  font-weight:650;font-size:13.5px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;transition:background .25s,color .25s}
+.grp .gact button svg{width:21px;height:21px}
+.grp .gact button:active{transform:scale(.95)}
+.grp .gact button.on{background:var(--c);color:#0b0e16;border-color:transparent;box-shadow:0 6px 18px -8px var(--c)}
+.grp .gact button.part{border-color:color-mix(in srgb,var(--c) 65%,transparent);color:color-mix(in srgb,var(--c) 70%,#fff)}
+.grp .gact button.gall.on{background:#f1f4f9;color:#0d111b}
+.grp .gcl{display:flex;gap:8px;padding:10px}
+.grp .gcl button{position:relative;border-radius:17px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07);color:#e9edf5;transition:background .25s}
+.grp .gcl button:active{transform:scale(.97)}
+.grp .gcl .gmain{flex:1;min-width:0;min-height:74px;display:flex;align-items:center;gap:12px;padding:0 14px;text-align:left}
+.grp .gcl .gmain .gi{flex:none;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:#232b3b;color:#aab2c3;transition:.25s}
+.grp .gcl .gmain .gi svg{width:28px;height:28px}
+.grp .gcl .gmain .gt{flex:1;min-width:0}
+.grp .gcl .gmain b{display:block;font-size:17px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.grp .gcl .gmain small{display:block;font-size:12.5px;color:#7f889b;margin-top:2px}
+.grp .gcl .gmain .sw2{flex:none;width:44px;height:26px;border-radius:999px;background:#2a3244;position:relative;transition:.25s}
+.grp .gcl .gmain .sw2::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#8e97aa;transition:left .25s cubic-bezier(.3,1.4,.5,1),background .25s}
+.grp .gcl .gmain.on{background:color-mix(in srgb,var(--c) 18%,#141926);border-color:color-mix(in srgb,var(--c) 50%,transparent)}
+.grp .gcl .gmain.on .gi{background:var(--c);color:#0b0e16;box-shadow:0 0 16px -2px var(--c)}
+.grp .gcl .gmain.on small{color:color-mix(in srgb,var(--c) 70%,#fff);font-weight:650}
+.grp .gcl .gmain.on .sw2{background:var(--c)}
+.grp .gcl .gmain.on .sw2::after{left:21px;background:#fff}
+.grp .gcl .gside{flex:none;width:84px;min-height:74px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;--c:#38bdf8}
+.grp .gcl .gside svg{width:24px;height:24px;color:#aab2c3}
+.grp .gcl .gside b{font-size:13px;font-weight:700}
+.grp .gcl .gside small{font-size:11px;color:#7f889b;font-weight:600}
+.grp .gcl .gside.on{background:var(--c);border-color:transparent;color:#0b0e16;box-shadow:0 6px 18px -8px var(--c)}
+.grp .gcl .gside.on svg{color:#0b0e16}
+.grp .gcl .gside.on small{color:rgba(11,14,22,.7)}
+.grp .gcl .pending{opacity:.7}
+.editing .grp .gact,.editing .grp .gcl{opacity:.4;pointer-events:none}
+.editing .grp .gcl{padding-right:56px}
+.rows .row.grp.slim{align-self:start}
+@media (min-width:900px){ .rows .row.grp.slim{grid-column:span 4} .rows .row.grp.slim.clim{grid-column:span 3} }
 .ov{position:fixed;inset:0;z-index:40;background:rgba(2,4,9,.6);display:none;align-items:flex-end;justify-content:center}
 .ov.show{display:flex}
 .sheet{width:100%;max-width:560px;max-height:92vh;max-height:92dvh;overflow:auto;background:#121724;border-top:1px solid var(--line);
@@ -758,6 +800,9 @@ code{font-size:12px;background:rgba(255,255,255,.07);padding:1px 6px;border-radi
     <input id="gpName" maxlength="30">
     <label>Type</label>
     <div class="segs" id="gpType"><button data-gt="lights">Lights</button><button data-gt="climate">Climate</button><button data-gt="other">Other</button></div>
+    <label>Button</label>
+    <div class="segs" id="gpLayout"><button data-gl="slim">Half height</button><button data-gl="full">Full · every device</button></div>
+    <div class="hint" id="gpLayoutHint"></div>
     <label>Room</label>
     <select id="gpRoom"></select>
     <label>Devices in this button</label>
@@ -1043,11 +1088,38 @@ function memberHTML(m){
   return `<button class="gm ${st==='ON'?'on':''} ${pending[k]?'pending':''} ${off?'offline':''}" style="--c:${m.color}" data-mid="${m.id}" aria-pressed="${st==='ON'}" aria-label="${esc(m.name)}">
     <span class="gi">${icon(m.icon)}</span><span class="gt"><b>${esc(m.name)}</b><small>${off ? 'Offline' : stateTxt(m)}</small></span></button>`;
 }
+function climSplit(g){              // main (fast) = fans, side (small, right) = AC / others
+  const ms = gMembers(g).filter(canOff); let main = ms.filter(m=>m.icon === 'fan'), side = ms.filter(m=>m.icon !== 'fan');
+  if(!main.length){ main = ms.slice(0, 1); side = ms.slice(1); }
+  return [main, side];
+}
+const setLbl = (set, one, many) => set.length === 1 ? set[0].name : many;
+const setSt = set => { const n = set.filter(devOn).length, p = set.some(m=>pending[keyOf(m)]);
+  return p ? 'Switching…' : n === 0 ? 'Off' : n === set.length ? 'On' : `${n} of ${set.length} on`; };
+function slimHTML(g, ms, n, live, sub){
+  const k = keyOf(g), head = `<div class="gh"><span class="gimg ${live?'on':''}">${icon(g.icon)}</span><span class="gtx"><b>${esc(g.name)}</b><small>${sub}</small></span>${ARR(g, true)}</div>`;
+  if(g.gtype === 'climate'){
+    const [main, side] = climSplit(g), mOn = main.some(devOn), sOn = side.some(devOn);
+    return `<div class="row wide grp slim clim ${live?'live':''}" style="--c:${g.color}" data-k="${k}" data-id="${g.id}" role="group" aria-label="${esc(g.name)}"><div class="gcl">
+      <button class="gmain ${mOn?'on':''}" data-gx="main" style="--c:${main[0]?.color || g.color}" aria-pressed="${mOn}"><span class="gi">${icon(main[0]?.icon || g.icon)}</span>
+        <span class="gt"><b>${esc(setLbl(main, '', 'Fans'))}</b><small>${setSt(main)}</small></span><span class="sw2"></span></button>
+      ${side.length ? `<button class="gside ${sOn?'on':''}" data-gx="side" style="--c:${side[0].color}" aria-pressed="${sOn}">${icon(side[0].icon)}<b>${esc(side.length === 1 && side[0].name.length <= 8 ? side[0].name : 'AC')}</b><small>${setSt(side)}</small></button>` : ''}
+      </div>${ARR(g, true)}</div>`;
+  }
+  const sw = ms.filter(m=>!isDual(m)), du = ms.filter(isDual), btns = [];
+  if(sw.length){ const on = sw.filter(devOn).length, spots = sw.every(m=>m.icon === 'spot');
+    btns.push(`<button data-gx="sw" class="${on === sw.length ? 'on' : on ? 'part' : ''}">${icon(spots ? 'spot' : sw[0].icon)}${sw.length === 1 ? esc(sw[0].name) : spots ? 'Spots' : 'Lights'}</button>`); }
+  if(du.length) ['low','high'].forEach(lv=>{ const at = du.filter(m=>level(m) === lv).length;
+    btns.push(`<button data-gx="lv:${lv}" class="${at === du.length ? 'on' : at ? 'part' : ''}">${icon(du[0].icon)}${du.length > 1 || !/cove/i.test(du[0].name) ? (lv === 'low' ? 'Cove low' : 'Cove high') : (lv === 'low' ? 'Low' : 'High')}</button>`); });
+  btns.push(`<button data-gx="master" class="gall ${live?'on':''}">${icon('power')}${live ? 'All off' : 'All on'}</button>`);
+  return `<div class="row wide grp slim ${live?'live':''}" style="--c:${g.color}" data-k="${k}" data-id="${g.id}" role="group" aria-label="${esc(g.name)}">${head}<div class="gact">${btns.join('')}</div></div>`;
+}
 function groupHTML(g){
   const ms = gMembers(g), n = onCount(ms), live = n > 0, k = keyOf(g);
   const sub = !ms.length ? 'No devices' : n === 0 ? `All off · ${ms.length}` : n === ms.length ? `All on · ${ms.length}` : `${n} of ${ms.length} on`;
   if(compactNow()) return `<button class="row sz-s grp-s ${live?'on':''}" style="--c:${g.color}" data-k="${k}" data-id="${g.id}" aria-label="${esc(g.name)}: ${sub}">
       <span class="ic">${icon(g.icon)}</span><span class="tx"><b>${esc(g.name)}</b></span>${ARR(g, true)}</button>`;
+  if(g.layout !== 'full') return slimHTML(g, ms, n, live, sub);
   return `<div class="row wide grp ${live?'live':''}" style="--c:${g.color}" data-k="${k}" data-id="${g.id}" role="group" aria-label="${esc(g.name)}">
     <div class="gh"><span class="gimg ${live?'on':''}">${icon(g.icon)}</span><span class="gtx"><b>${esc(g.name)}</b><small>${sub}</small></span>
       <button class="gpow" data-gx="master" aria-pressed="${live}" aria-label="${esc(g.name)} ${live ? 'off' : 'on'}">${icon('power')}</button>${ARR(g, true)}</div>
@@ -1558,6 +1630,12 @@ const vib = ms => { try{ if(APP) Android.vibrate(ms); else if(navigator.vibrate)
 function activate(id, act){
   const d = home.devices.find(x=>x.id===id); if(!d) return;
   if(editing){ if(act === 'size'){ cycleSize(d); return; } openEditor(id); return; }
+  if(isGroup(d) && act && act !== 'master'){ const ms = gMembers(d).filter(canOff);
+    if(act.startsWith('lv:')){ const lv = act.slice(3), du = ms.filter(isDual), all = du.every(m=>level(m) === lv); vib(15);
+      du.forEach((m, i)=>setTimeout(()=>dualSet(m, all ? 'off' : lv), i * 160)); return; }
+    const set = act === 'sw' ? ms.filter(m=>!isDual(m)) : act === 'main' ? climSplit(d)[0] : act === 'side' ? climSplit(d)[1] : [];
+    if(set.length){ const any = set.some(devOn); runList(set.map(m=>[m, any ? 'OFF' : 'ON'])); }
+    return; }
   if(isGroup(d)){ const ms = gMembers(d).filter(canOff), any = ms.some(devOn);
     runList(ms.map(m=>[m, any ? 'OFF' : 'ON']), `${d.name} ${any ? 'off' : 'on'}`); return; }
   if(isGate(d)){ if(act) gateDo(d, act); else openGate(d); return; }
@@ -1792,6 +1870,9 @@ function drawGroup(){
   $('#gpMembers').innerHTML = list.map(d=>`<button data-gm="${d.id}" style="--c:${d.color}" class="${(g.members||[]).includes(d.id)?'sel':''}">${icon(d.icon)}${esc(d.name)}${(d.room||'') !== rid ? ` <small>· ${esc(roomById(d.room)?.name || 'Other')}</small>` : ''}</button>`).join('')
     || '<div class="hint">No devices yet — add relays under Controllers first.</div>';
   $('#gpHide').checked = g.hideMembers !== false;
+  document.querySelectorAll('#gpLayout button').forEach(b=>b.classList.toggle('sel', b.dataset.gl === (g.layout === 'full' ? 'full' : 'slim')));
+  $('#gpLayoutHint').textContent = g.layout === 'full' ? 'A big card with a control for each device.'
+    : g.gtype === 'climate' ? 'Fan as a big quick button, AC as a small button on the right.' : 'One row: spots · cove low · cove high · all on/off.';
   $('#gpDel').style.display = g.isNew ? 'none' : '';
 }
 $('#gpName').oninput = e=>{ gdraft.name = e.target.value; };
@@ -1802,6 +1883,7 @@ $('#gpType').onclick = e=>{ const b = e.target.closest('[data-gt]'); if(!b) retu
 $('#gpRoom').onchange = e=>{ gdraft.room = e.target.value; drawGroup(); };
 $('#gpMembers').onclick = e=>{ const b = e.target.closest('[data-gm]'); if(!b) return; const id = b.dataset.gm, m = gdraft.members || (gdraft.members = []);
   const i = m.indexOf(id); if(i >= 0) m.splice(i, 1); else m.push(id); b.classList.toggle('sel', i < 0); };
+$('#gpLayout').onclick = e=>{ const b = e.target.closest('[data-gl]'); if(b){ gdraft.layout = b.dataset.gl; drawGroup(); } };
 $('#gpHide').onchange = e=>{ gdraft.hideMembers = e.target.checked; };
 $('#gpCancel').onclick = ()=> $('#grpOv').classList.remove('show');
 $('#gpDel').onclick = ()=>{ if(!confirm(`Delete the “${gdraft.name}” button? The devices themselves stay.`)) return;
