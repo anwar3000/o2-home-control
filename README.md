@@ -57,3 +57,11 @@ Brand assets: `brand/` (O2 gold #D4AF37).
   - app → `o2/garden/watering/set`: `{"cmd":"start","minutes":10}`, `{"cmd":"stop"}`, `{"cmd":"auto","on":true}`, `{"cmd":"get"}`
   - Node-RED → `o2/garden/watering/state` (retained): `{"state":"ON","until":<epoch ms>,"auto":true,"schedule":"06:00 · 15 min"}`
   - Ready-made flow: `node-red/garden-watering-flow.json` (Node-RED → Menu → Import). Edit the relay topic and schedule at the top of the *Garden watering* function.
+
+## Group buttons (Lights / Climate)
+
+One full-width button that controls several devices — e.g. 2 cove lights + 2 spot lights, or AC + fan.
+- Big picture + master power button: turns the whole group on or off (cove lights return to their last Low/High).
+- Each device has its own large control inside the card; Low/High lights get **Off · Low · High**.
+- The individual buttons are hidden in that room (they stay on the map); turn this off in the group editor.
+- Add or edit under **Setup → Controllers → Group buttons**, or long-press a group. On first start the app creates a Lights and a Climate button in each room that has them.

@@ -286,6 +286,65 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .musicbar.beat .eq i{height:24px}.musicbar.beat .eq i:nth-child(2){height:14px}.musicbar.beat .eq i:nth-child(3){height:19px}
 
 /* ---------- sheets ---------- */
+/* ===== group buttons (Lights / Climate): one full-width card that controls several devices ===== */
+.row.grp{display:block;grid-column:1 / -1;padding:0;overflow:hidden;border-radius:24px;min-height:0;
+  background:linear-gradient(165deg,#171d2b,#10141e);border:1px solid rgba(255,255,255,.07)}
+.row.grp:active{transform:none}
+.grp .gh{position:relative;display:flex;align-items:center;gap:14px;padding:16px 16px 14px;cursor:pointer}
+.grp .gh::before{content:"";position:absolute;inset:0;opacity:0;transition:opacity .4s;
+  background:radial-gradient(120% 140% at 12% 0%,color-mix(in srgb,var(--c) 30%,transparent),transparent 62%)}
+.grp.live .gh::before{opacity:1}
+.grp .gimg{position:relative;flex:none;width:70px;height:70px;border-radius:22px;display:grid;place-items:center;color:#8f98ab;
+  background:radial-gradient(circle at 50% 42%,rgba(255,255,255,.08),rgba(255,255,255,.015) 70%);border:1px solid rgba(255,255,255,.06);transition:.35s}
+.grp .gimg svg{width:44px;height:44px;stroke-width:1.5;fill:color-mix(in srgb,currentColor 12%,transparent)}
+.grp.live .gimg{color:color-mix(in srgb,var(--c) 75%,#fff);border-color:color-mix(in srgb,var(--c) 40%,transparent);
+  background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--c) 42%,transparent),color-mix(in srgb,var(--c) 6%,transparent) 72%)}
+.grp.live .gimg svg{filter:drop-shadow(0 0 10px var(--c));fill:color-mix(in srgb,var(--c) 30%,transparent)}
+.grp .gtx{position:relative;flex:1;min-width:0}
+.grp .gtx b{display:block;font-size:19px;font-weight:700;color:#f1f4f9;letter-spacing:-.015em;line-height:1.2}
+.grp .gtx small{display:block;margin-top:4px;font-size:13.5px;font-weight:600;color:#7f889b;white-space:normal}
+.grp.live .gtx small{color:color-mix(in srgb,var(--c) 70%,#fff)}
+.grp .gpow{position:relative;flex:none;width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:#232b3b;color:#9aa3b5;
+  border:1px solid rgba(255,255,255,.07);transition:.25s}
+.grp .gpow svg{width:26px;height:26px}
+.grp.live .gpow{background:var(--c);color:#0b0e16;border-color:transparent;box-shadow:0 0 0 5px color-mix(in srgb,var(--c) 20%,transparent),0 10px 26px -8px var(--c)}
+.grp .gpow:active{transform:scale(.92)}
+.grp .gms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:0 12px 12px}
+.grp .gm{--c:#7dd3fc;position:relative;display:flex;align-items:center;gap:10px;min-height:64px;padding:10px 12px;border-radius:16px;text-align:left;
+  background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);color:#e9edf5;cursor:pointer;transition:background .25s,border-color .25s}
+.grp .gm:active{transform:scale(.97)}
+.grp .gm.dual{grid-column:1 / -1;flex-wrap:wrap}
+.grp .gm .gi{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:#232b3b;color:#aab2c3;transition:.25s;position:relative}
+.grp .gm .gi svg{width:22px;height:22px}
+.grp .gm .gt{flex:1;min-width:0}
+.grp .gm .gt b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:14.5px;font-weight:650;color:#e9edf5;line-height:1.2;white-space:normal}
+.grp .gm .gt small{display:block;font-size:12px;color:#7f889b;margin-top:2px}
+.grp .gm.on{background:color-mix(in srgb,var(--c) 16%,#141926);border-color:color-mix(in srgb,var(--c) 45%,transparent)}
+.grp .gm.on .gi{background:var(--c);color:#0b0e16;box-shadow:0 0 14px -2px var(--c)}
+.grp .gm.on .gt small{color:color-mix(in srgb,var(--c) 70%,#fff);font-weight:650}
+.grp .gm.offline{opacity:.45}
+.grp .gm.pending .gi::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:2px solid transparent;border-top-color:currentColor;animation:rot .8s linear infinite}
+.grp .glv{display:flex;gap:4px;padding:4px;border-radius:14px;background:#0c1019;margin-left:auto}
+.grp .glv i{font-style:normal;min-width:58px;min-height:40px;display:grid;place-items:center;font-size:13.5px;font-weight:700;border-radius:10px;color:#8e97aa;line-height:1}
+.grp .gm.lvl-off .glv i[data-lv=off]{background:#2a3244;color:#fff}
+.grp .gm.lvl-low .glv i[data-lv=low],.grp .gm.lvl-high .glv i[data-lv=high]{background:var(--c);color:#0b0e16}
+.grp.offline{opacity:1}
+.row.grp{padding:0 !important}
+.grp .gm.dual .glv{flex-basis:100%;margin-left:0}
+.grp .gm.dual .glv i{flex:1}
+@media (min-width:520px){ .grp .gm.dual .glv{flex-basis:auto;margin-left:auto} .grp .gm.dual .glv i{flex:none} }
+.editing .grp .gpow,.editing .grp .gms{opacity:.4;pointer-events:none}
+.editing .grp .gh{padding-right:60px}
+@media (max-width:380px){ .grp .gms{grid-template-columns:1fr} .grp .gimg{width:60px;height:60px} .grp .gimg svg{width:38px;height:38px}
+  .grp .glv i{min-width:50px} }
+@media (min-width:700px){ .grp .gms{grid-template-columns:repeat(4,minmax(0,1fr))} .grp .gm.dual{grid-column:span 2} }
+.style-bright .grp,.style-minimal .grp{background:linear-gradient(165deg,#171d2b,#10141e)}
+.row.sz-s.grp-s .ic{background:radial-gradient(circle,rgba(255,255,255,.08),transparent 70%)}
+.gpl{display:flex;flex-wrap:wrap;gap:8px}
+.gpl button{display:flex;align-items:center;gap:7px;min-height:42px;padding:0 13px 0 9px;border-radius:999px;border:1px solid var(--line);background:#0d111b;color:var(--mute);font-weight:600;font-size:13.5px}
+.gpl button svg{width:18px;height:18px}
+.gpl button small{opacity:.7;font-weight:500}
+.gpl button.sel{background:var(--c);color:#0b0e16;border-color:transparent}
 .ov{position:fixed;inset:0;z-index:40;background:rgba(2,4,9,.6);display:none;align-items:flex-end;justify-content:center}
 .ov.show{display:flex}
 .sheet{width:100%;max-width:560px;max-height:92vh;max-height:92dvh;overflow:auto;background:#121724;border-top:1px solid var(--line);
@@ -689,6 +748,29 @@ code{font-size:12px;background:rgba(255,255,255,.07);padding:1px 6px;border-radi
   </div>
 </div>
 
+<!-- group button editor -->
+<div class="ov" id="grpOv">
+  <div class="sheet">
+    <div class="grab"></div>
+    <h2>Group button</h2>
+    <p class="sub">One big button that controls several devices.</p>
+    <label>Name</label>
+    <input id="gpName" maxlength="30">
+    <label>Type</label>
+    <div class="segs" id="gpType"><button data-gt="lights">Lights</button><button data-gt="climate">Climate</button><button data-gt="other">Other</button></div>
+    <label>Room</label>
+    <select id="gpRoom"></select>
+    <label>Devices in this button</label>
+    <div class="hint" style="margin-top:0">Tap to add or remove.</div>
+    <div class="gpl" id="gpMembers"></div>
+    <label class="tgl"><span>Hide these buttons in the room<small>So nothing shows twice. They stay on the map.</small></span><input type="checkbox" id="gpHide"><span class="sw"></span></label>
+    <div class="actions">
+      <button class="btn danger small" id="gpDel">Delete</button>
+      <button class="btn" id="gpCancel">Cancel</button>
+      <button class="btn pri" id="gpSave">Save</button>
+    </div>
+  </div>
+</div>
 <!-- gate -->
 <div class="ov" id="gateOv" role="dialog">
   <div class="sheet">
@@ -771,6 +853,7 @@ const ICONS = {
   cat:`<path d="M5 4l3 4h8l3-4v9a7 7 0 0 1-14 0z"/><circle cx="9.5" cy="12" r=".8"/><circle cx="14.5" cy="12" r=".8"/><path d="M12 14v1.5M10.5 16.5h3"/>`,
   waterheater:`<rect x="6" y="2" width="12" height="17" rx="5"/><path d="M9 22v-3M15 22v-3"/><path class="flow" d="M12 7c-1.6 2-1.6 3.2 0 4.6 1.6-1.4 1.6-2.6 0-4.6z"/>`,
   gate:`<path d="M3 21V4M21 21V4"/><path d="M3 8h18M3 18h18"/><path d="M7.5 8v10M12 8v10M16.5 8v10"/>`,
+  snow:`<path d="M12 2v20M3.3 7l17.4 10M3.3 17L20.7 7"/><path d="M9.5 3.5L12 6l2.5-2.5M9.5 20.5L12 18l2.5 2.5M4 10.3l3.4-.9-.9-3.4M20 13.7l-3.4.9.9 3.4M6.5 17.9l.9-3.4L4 13.6M17.5 6.1l-.9 3.4 3.4.9"/>`,
   water:`<path d="M12 21v-5M8 21h8"/><circle cx="12" cy="13" r="3"/><path class="flow" d="M5 5l3 3M19 5l-3 3M12 2v4"/>`,
   power:`<path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.8 0"/>`,
   moon:`<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>`,
@@ -866,6 +949,7 @@ if(!store.get('hc.rooms2', false)){
   }
   store.set('hc.rooms2', true);
 }
+
 const GATE_DEFAULT = () => ({open:[{ch:7, cmd:'ON'}, {ch:8, cmd:'OFF'}], close:[{ch:8, cmd:'ON'}, {ch:7, cmd:'OFF'}], half:{topic:'o2/gate/half', payload:'ON'}});
 function normGate(d){              // upgrade the earlier one-relay gate format
   const A = d.actions || {};
@@ -892,13 +976,24 @@ let client = null, editing = false, conn = {kind:'wait', txt:'Connecting…'}, l
 let gen = 0, active = null, activeUrl = '', failTimer = null;   // which broker is in use: 'home' | 'away'
 
 const isGate = d => d.kind === 'gate', isWater = d => d.kind === 'water', isSwitch = d => !d.kind || d.kind === 'switch', isDual = d => d.kind === 'dual';
+const isGroup = d => d.kind === 'group';
 const canOff = d => isSwitch(d) || isDual(d);
+const GRP = {lights:{name:'Lights', icon:'chandelier', color:'#fbbf24'}, climate:{name:'Climate', icon:'snow', color:'#38bdf8'}, other:{name:'Group', icon:'grid', color:'#a78bfa'}};
+const gMembers = g => (g.members || []).map(id=>used().find(x=>x.id===id)).filter(Boolean);
+const groupsAll = () => home.devices.filter(d=>isGroup(d) && d.used !== false && gMembers(d).length);
+function rowsIn(rid){                // buttons for a room: groups + devices not hidden inside a group of the same room
+  const gs = groupsAll().filter(g=>(g.room||'') === rid);
+  const hid = new Set(gs.filter(g=>g.hideMembers !== false).flatMap(g=>gMembers(g).filter(m=>(m.room||'') === rid).map(m=>m.id)));
+  const u = new Set(inRoom(rid));
+  return home.devices.filter(d=>isGroup(d) ? gs.includes(d) : u.has(d) && !hid.has(d.id));
+}
+
 /* Low / High lights (e.g. cove): low = relay ch ON, ch2 OFF · high = both ON · off = both OFF */
 function level(d){ const a = power[d.ctl+':'+d.ch], b = power[d.ctl+':'+d.ch2];
   if(a === undefined && b === undefined) return null; if(a === 'ON' && b === 'ON') return 'high'; if(a === 'ON' || b === 'ON') return 'low'; return 'off'; }
 const dualLast = store.get('hc.lv', {});
 const devOn = d => isDual(d) ? ['low','high'].includes(level(d)) : !isGate(d) && power[keyOf(d)] === 'ON';
-const keyOf = d => isWater(d) ? 'w:' + d.id : isGate(d) ? 'g:' + d.id : d.ctl + ':' + d.ch;
+const keyOf = d => isGroup(d) ? 'grp:' + d.id : isWater(d) ? 'w:' + d.id : isGate(d) ? 'g:' + d.id : d.ctl + ':' + d.ch;
 const ctlById = id => home.ctls.find(c=>c.id===id);
 const used = () => home.devices.filter(d=>d.used && (isWater(d) || ctlById(d.ctl)));
 const devByKey = k => used().find(d=>keyOf(d)===k);
@@ -907,6 +1002,18 @@ const inRoom = rid => used().filter(d=>(d.room||'')===rid);
 const scopeDevs = () => cfg.scope==='all' ? used() : inRoom(cfg.scope);
 const isLight = d => LIGHTS.has(d.icon);
 const C = id => (cst[id] = cst[id] || {lwt:null, seen:false, http:null, err:''});
+if(!store.get('hc.grp1', false)){       // one time: a Lights button and a Climate button in each room that has them
+  [...home.rooms.map(r=>r.id)].forEach(rid=>{
+    const devs = used().filter(d=>(d.room||'') === rid && canOff(d));
+    const L = devs.filter(isLight), A = devs.filter(d=>['ac','fan','heater'].includes(d.icon));
+    const mk = (type, ms)=>{ const G = GRP[type], first = home.devices.findIndex(d=>(d.room||'') === rid && !isGroup(d));
+      home.devices.splice(first < 0 ? home.devices.length : first, 0, {id: uid('g'), kind:'group', gtype:type, used:true, name:G.name, room:rid,
+        icon:G.icon, color:G.color, ctl:'', ch:0, members: ms.map(d=>d.id), hideMembers:true, x:null, y:null}); };
+    if(L.length >= 2 && !home.devices.some(g=>isGroup(g) && g.room === rid && g.gtype === 'lights')) mk('lights', L);
+    if(A.length >= 2 && !home.devices.some(g=>isGroup(g) && g.room === rid && g.gtype === 'climate')) mk('climate', A);
+  });
+  store.set('hc.home', home); store.set('hc.grp1', true);
+}
 
 /* =================== RENDER =================== */
 const stateTxt = d => pending[keyOf(d)] ? 'Switching…' : power[keyOf(d)]==='ON' ? 'On' : power[keyOf(d)]==='OFF' ? 'Off' : 'No status';
@@ -926,7 +1033,28 @@ function waterTxt(d){
   return `Off · Auto ${s.auto ? 'on' : 'off'}`;
 }
 const compactNow = () => cfg.scope === 'all' && cfg.allSize !== 'normal';
+function memberHTML(m){
+  const k = keyOf(m), off = ctlOnline(m.ctl) === false;
+  if(isDual(m)){ const lv = level(m), on = lv === 'low' || lv === 'high';
+    return `<div class="gm dual ${on?'on':''} lvl-${lv||'none'} ${pending[k]?'pending':''} ${off?'offline':''}" style="--c:${m.color}" data-mid="${m.id}" role="group" aria-label="${esc(m.name)}">
+      <span class="gi">${icon(m.icon)}</span><span class="gt"><b>${esc(m.name)}</b><small>${off ? 'Offline' : pending[k] ? 'Switching…' : {high:'High', low:'Low', off:'Off'}[lv] || 'No status'}</small></span>
+      <span class="glv"><i data-lv="off" role="button">Off</i><i data-lv="low" role="button">Low</i><i data-lv="high" role="button">High</i></span></div>`; }
+  const st = power[k];
+  return `<button class="gm ${st==='ON'?'on':''} ${pending[k]?'pending':''} ${off?'offline':''}" style="--c:${m.color}" data-mid="${m.id}" aria-pressed="${st==='ON'}" aria-label="${esc(m.name)}">
+    <span class="gi">${icon(m.icon)}</span><span class="gt"><b>${esc(m.name)}</b><small>${off ? 'Offline' : stateTxt(m)}</small></span></button>`;
+}
+function groupHTML(g){
+  const ms = gMembers(g), n = onCount(ms), live = n > 0, k = keyOf(g);
+  const sub = !ms.length ? 'No devices' : n === 0 ? `All off · ${ms.length}` : n === ms.length ? `All on · ${ms.length}` : `${n} of ${ms.length} on`;
+  if(compactNow()) return `<button class="row sz-s grp-s ${live?'on':''}" style="--c:${g.color}" data-k="${k}" data-id="${g.id}" aria-label="${esc(g.name)}: ${sub}">
+      <span class="ic">${icon(g.icon)}</span><span class="tx"><b>${esc(g.name)}</b></span>${ARR(g, true)}</button>`;
+  return `<div class="row wide grp ${live?'live':''}" style="--c:${g.color}" data-k="${k}" data-id="${g.id}" role="group" aria-label="${esc(g.name)}">
+    <div class="gh"><span class="gimg ${live?'on':''}">${icon(g.icon)}</span><span class="gtx"><b>${esc(g.name)}</b><small>${sub}</small></span>
+      <button class="gpow" data-gx="master" aria-pressed="${live}" aria-label="${esc(g.name)} ${live ? 'off' : 'on'}">${icon('power')}</button>${ARR(g, true)}</div>
+    <div class="gms">${ms.map(memberHTML).join('')}</div></div>`;
+}
 function tileHTML(d){
+  if(isGroup(d)) return groupHTML(d);
   if(compactNow()){                     // All rooms: small buttons, icon + name; gate / watering open their controls
     const k = keyOf(d), on = devOn(d), off = isWater(d) ? !mqttUp() : ctlOnline(d.ctl) === false;
     const st = isGate(d) ? gateTxt(d) : isWater(d) ? waterTxt(d) : isDual(d) ? ({high:'High', low:'Low', off:'Off'}[level(d)] || 'No status') : stateTxt(d);
@@ -959,7 +1087,7 @@ function tileHTML(d){
 }
 function onCount(list){ return list.filter(devOn).length; }
 const SIZE_LBL = {s:'Small', m:'Normal', l:'Wide'};
-const sizeOf = d => (isGate(d) || isWater(d)) ? 'l' : (d.size || 'm');
+const sizeOf = d => (isGate(d) || isWater(d) || isGroup(d)) ? 'l' : (d.size || 'm');
 const ARR = (d, compact) => `<span class="grip" data-grip aria-label="Drag to move">${icon('grip')}</span>` + ((compact || isGate(d) || isWater(d)) ? '' : `<span class="szb" data-size>${SIZE_LBL[sizeOf(d)]}</span>`);
 function applyLook(){
   const b = document.body;
@@ -1003,16 +1131,16 @@ function render(){
       main.innerHTML = `<div class="mapgrid">${roomsToShow.map(r=>mapCardHTML(r, true)).join('')}</div>`;
     } else {
       const list = inRoom(roomsToShow[0].id);
-      main.innerHTML = `<div class="split">${mapCardHTML(roomsToShow[0], false)}<div class="rows">${list.map(tileHTML).join('')}</div></div>`;
+      main.innerHTML = `<div class="split">${mapCardHTML(roomsToShow[0], false)}<div class="rows">${rowsIn(roomsToShow[0].id).map(tileHTML).join('')}</div></div>`;
     }
     document.querySelectorAll('.room[data-room]').forEach(el=>renderRoomCanvas(el));
   } else {
     if(inAll){
       main.innerHTML = '<div class="secgrid">' + roomsToShow.map(r=>{ const list = inRoom(r.id), n = onCount(list);
         return `<div class="sec" data-sec="${esc(r.id)}"><div class="sh"><button class="shl" data-scope="${esc(r.id)}" aria-label="Open ${esc(r.name)}"><b>${esc(r.name)}</b><small>${n ? n+' on' : ''}</small>${icon('right')}</button>
-          <button class="soff" data-roomoff="${esc(r.id)}">${icon('power')}Turn off</button></div><div class="rows">${list.map(tileHTML).join('')}</div></div>`; }).join('') + '</div>';
+          <button class="soff" data-roomoff="${esc(r.id)}">${icon('power')}Turn off</button></div><div class="rows">${rowsIn(r.id).map(tileHTML).join('')}</div></div>`; }).join('') + '</div>';
     } else {
-      main.innerHTML = `<div class="rows" style="margin-top:12px">${inRoom(roomsToShow[0].id).map(tileHTML).join('')}</div>`;
+      main.innerHTML = `<div class="rows" style="margin-top:12px">${rowsIn(roomsToShow[0].id).map(tileHTML).join('')}</div>`;
     }
   }
   status();
@@ -1029,6 +1157,9 @@ function updateDevice(k){
     document.querySelectorAll(`.row[data-k="${kk}"]`).forEach(el=>{ el.outerHTML = tileHTML(d); });
     document.querySelectorAll(`.spot[data-k="${kk}"]`).forEach(el=>{ el.className = spotCls(d) + (el.classList.contains('dragging') ? ' dragging' : ''); });
     document.querySelectorAll(`.room[data-room="${CSS.escape(d.room||'')}"]`).forEach(roomFx); });
+  const ids = new Set(list.map(d=>d.id));
+  document.querySelectorAll('#main .row.grp, #main .row.grp-s').forEach(el=>{ const g = home.devices.find(x=>x.id===el.dataset.id);
+    if(g && (g.members || []).some(id=>ids.has(id)) && !el.classList.contains('lifting')) el.outerHTML = tileHTML(g); });
   refreshCounts(); status();
 }
 /* ---- rooms: big room bar (‹ name ›), room picker sheet, swipe ---- */
@@ -1427,9 +1558,11 @@ const vib = ms => { try{ if(APP) Android.vibrate(ms); else if(navigator.vibrate)
 function activate(id, act){
   const d = home.devices.find(x=>x.id===id); if(!d) return;
   if(editing){ if(act === 'size'){ cycleSize(d); return; } openEditor(id); return; }
+  if(isGroup(d)){ const ms = gMembers(d).filter(canOff), any = ms.some(devOn);
+    runList(ms.map(m=>[m, any ? 'OFF' : 'ON']), `${d.name} ${any ? 'off' : 'on'}`); return; }
   if(isGate(d)){ if(act) gateDo(d, act); else openGate(d); return; }
   if(isDual(d)){ vib(12); const lv = level(d);
-    if(act === 'low' || act === 'high') dualSet(d, act);
+    if(act === 'low' || act === 'high' || act === 'off') dualSet(d, act);
     else dualSet(d, lv === 'low' || lv === 'high' ? 'off' : (dualLast[d.id] || 'high'));
     return; }
   if(isWater(d)){ if(act === 'start') waterCmd(d, {cmd:'start', minutes: d.minutes || 10}); else if(act === 'stop') waterCmd(d, {cmd:'stop'}); else openWater(d); return; }
@@ -1440,14 +1573,14 @@ let press = null;
 document.addEventListener('pointerdown', e=>{
   const el = e.target.closest('#main .row, .spot');
   if(!el || (e.button && e.button !== 0)) return;
-  const ab = e.target.closest('[data-gact],[data-wact],[data-lv]');
+  const ab = e.target.closest('[data-gact],[data-wact],[data-lv],[data-gx]'), gm = e.target.closest('[data-mid]');
   if(editing && el.classList.contains('row') && e.target.closest('[data-grip]')){      // drag a button to reorder
     const r = el.getBoundingClientRect();
     press = { el, id: el.dataset.id, pid: e.pointerId, x: e.clientX, y: e.clientY, gx: e.clientX - r.left, gy: e.clientY - r.top, moved:false, tile:true };
     try{ e.target.closest('[data-grip]').setPointerCapture(e.pointerId); }catch(_){}
     e.preventDefault(); return;
   }
-  press = { el, id: el.dataset.id, act: e.target.closest('[data-size]') ? 'size' : ab ? (ab.dataset.gact || ab.dataset.wact || ab.dataset.lv) : null, pid: e.pointerId, x: e.clientX, y: e.clientY, moved:false, long:false,
+  press = { el, id: gm ? gm.dataset.mid : el.dataset.id, act: e.target.closest('[data-size]') ? 'size' : ab ? (ab.dataset.gact || ab.dataset.wact || ab.dataset.lv || ab.dataset.gx) : null, pid: e.pointerId, x: e.clientX, y: e.clientY, moved:false, long:false,
             drag: editing && el.classList.contains('spot'), room: el.closest('.room') };
   if(press.drag){ try{ el.setPointerCapture(e.pointerId); }catch(_){} }
   press.timer = setTimeout(()=>{ if(press && !press.moved){ press.long = true; vib(35); openEditor(press.id); } }, 550);
@@ -1545,6 +1678,7 @@ function relayOwner(ctl, ch, exceptId){          // who uses relay ch on control
 function relayTaken(ctl, ch, exceptId){ const o = relayOwner(ctl, ch, exceptId); return o ? o.d : null; }
 function openEditor(id){
   const d = home.devices.find(x=>x.id===id); if(!d) return;
+  if(isGroup(d)) return openGroup(id);
   draft = JSON.parse(JSON.stringify(d)); draftFromSetup = $('#setOv').classList.contains('show');
   $('#eName').value = draft.name;
   $('#eRoom').innerHTML = `<option value="">— No room —</option>` + home.rooms.map(r=>`<option value="${esc(r.id)}" ${r.id===draft.room?'selected':''}>${esc(r.name)}</option>`).join('');
@@ -1631,6 +1765,60 @@ $('#eSave').onclick = ()=>{
   $('#editOv').classList.remove('show'); afterEdit(); toast('Saved');
   if(mqttUp()) subscribeAll();
 };
+/* ---- group buttons ---- */
+const groupsAllAny = () => home.devices.filter(isGroup);
+let gdraft = null;
+function addGroup(type, rid){
+  const want = type === 'climate' ? (d=>['ac','fan','heater'].includes(d.icon)) : isLight;
+  const pool = used().filter(d=>canOff(d) && want(d));
+  if(rid === undefined) rid = cfg.scope !== 'all' && (roomById(cfg.scope) || cfg.scope === '') ? cfg.scope
+    : (home.rooms.map(r=>r.id).find(id=>pool.filter(d=>(d.room||'') === id).length >= 2) ?? home.rooms[0]?.id ?? '');
+  const G = GRP[type] || GRP.other;
+  const g = {id: uid('g'), kind:'group', gtype:type, used:true, name:G.name, room:rid, icon:G.icon, color:G.color, ctl:'', ch:0,
+             members: pool.filter(d=>(d.room||'') === rid).map(d=>d.id), hideMembers:true, x:null, y:null};
+  gdraft = g; gdraft.isNew = true; drawGroup(); $('#grpOv').classList.add('show');
+}
+function openGroup(id){
+  const g = home.devices.find(x=>x.id===id); if(!g) return;
+  gdraft = JSON.parse(JSON.stringify(g)); drawGroup(); $('#grpOv').classList.add('show');
+}
+function drawGroup(){
+  const g = gdraft;
+  $('#gpName').value = g.name;
+  document.querySelectorAll('#gpType button').forEach(b=>b.classList.toggle('sel', b.dataset.gt === (g.gtype || 'other')));
+  $('#gpRoom').innerHTML = `<option value="">— No room —</option>` + home.rooms.map(r=>`<option value="${esc(r.id)}" ${r.id===g.room?'selected':''}>${esc(r.name)}</option>`).join('');
+  const rid = g.room || '', all = used().filter(canOff);
+  const list = [...all.filter(d=>(d.room||'') === rid), ...all.filter(d=>(d.room||'') !== rid)];
+  $('#gpMembers').innerHTML = list.map(d=>`<button data-gm="${d.id}" style="--c:${d.color}" class="${(g.members||[]).includes(d.id)?'sel':''}">${icon(d.icon)}${esc(d.name)}${(d.room||'') !== rid ? ` <small>· ${esc(roomById(d.room)?.name || 'Other')}</small>` : ''}</button>`).join('')
+    || '<div class="hint">No devices yet — add relays under Controllers first.</div>';
+  $('#gpHide').checked = g.hideMembers !== false;
+  $('#gpDel').style.display = g.isNew ? 'none' : '';
+}
+$('#gpName').oninput = e=>{ gdraft.name = e.target.value; };
+$('#gpType').onclick = e=>{ const b = e.target.closest('[data-gt]'); if(!b) return; const old = GRP[gdraft.gtype] || GRP.other, G = GRP[b.dataset.gt];
+  if(!gdraft.name || gdraft.name === old.name) gdraft.name = G.name;
+  if(gdraft.icon === old.icon) gdraft.icon = G.icon; if(gdraft.color === old.color) gdraft.color = G.color;
+  gdraft.gtype = b.dataset.gt; drawGroup(); };
+$('#gpRoom').onchange = e=>{ gdraft.room = e.target.value; drawGroup(); };
+$('#gpMembers').onclick = e=>{ const b = e.target.closest('[data-gm]'); if(!b) return; const id = b.dataset.gm, m = gdraft.members || (gdraft.members = []);
+  const i = m.indexOf(id); if(i >= 0) m.splice(i, 1); else m.push(id); b.classList.toggle('sel', i < 0); };
+$('#gpHide').onchange = e=>{ gdraft.hideMembers = e.target.checked; };
+$('#gpCancel').onclick = ()=> $('#grpOv').classList.remove('show');
+$('#gpDel').onclick = ()=>{ if(!confirm(`Delete the “${gdraft.name}” button? The devices themselves stay.`)) return;
+  home.devices = home.devices.filter(x=>x.id !== gdraft.id); saveHome(); $('#grpOv').classList.remove('show'); afterGroup(); toast('Group removed'); };
+$('#gpSave').onclick = ()=>{
+  const g = gdraft; g.members = (g.members || []).filter(id=>used().some(d=>d.id===id));
+  if(!g.members.length){ toast('Pick at least one device'); return; }
+  g.name = (g.name || '').trim() || (GRP[g.gtype] || GRP.other).name;
+  const isNew = g.isNew; delete g.isNew;
+  if(isNew){ const first = home.devices.findIndex(d=>(d.room||'') === (g.room||'') && !isGroup(d));   // new group goes first in its room
+    home.devices.splice(first < 0 ? home.devices.length : first, 0, g); }
+  else { const i = home.devices.findIndex(x=>x.id===g.id); home.devices[i] = g; }
+  saveHome(); $('#grpOv').classList.remove('show');
+  if(isNew && cfg.scope !== 'all' && cfg.scope !== (g.room||'') && roomById(g.room)){ cfg.scope = g.room; saveCfg(); }
+  afterGroup(); toast(isNew ? `${g.name} button added` : 'Saved');
+};
+function afterGroup(){ if($('#setOv').classList.contains('show')) drawSetup(); render(); }
 function afterEdit(){ if(draftFromSetup && $('#setOv').classList.contains('show')) drawSetup(); render(); }
 
 /* =================== SETUP =================== */
@@ -1674,6 +1862,11 @@ function drawSetup(){
         </div>`; }).join('')
       + (home.ctls.length < MAX_CTLS ? `<div class="actions" style="margin-top:14px"><button class="btn" data-ctl-add>+ Add controller</button></div>` : '')
       + `<div class="small-note">Topic is the Tasmota “Full topic” name: commands go to <code>cmnd/&lt;topic&gt;/POWERn</code>.</div>`
+      + `<label style="margin-top:24px">Group buttons</label><div class="hint" style="margin-top:0">One big button for several devices, e.g. all the lights of a room, or AC + fan.</div>`
+      + groupsAllAny().map(g=>`<div class="lrow"><span class="wl">${icon(g.icon)}<b>${esc(g.name)}</b>
+          <small>${esc(roomById(g.room)?.name || 'No room')} · ${gMembers(g).length} devices</small></span>
+          <button class="icb" data-grp-edit="${g.id}" aria-label="Edit">${icon('pen')}</button></div>`).join('')
+      + `<div class="actions" style="margin-top:10px"><button class="btn" data-grp-add="lights">+ Lights button</button><button class="btn" data-grp-add="climate">+ Climate button</button></div>`
       + `<label style="margin-top:24px">Gates &amp; Node-RED devices</label>`
       + used().filter(d=>isGate(d) || isWater(d)).map(d=>`<div class="lrow"><span class="wl">${icon(isGate(d) ? 'gate' : 'water')}<b>${esc(d.name)}</b>
           <small>${isGate(d) ? esc(ctlById(d.ctl)?.topic || '') : esc(d.topic)}</small></span>
@@ -1805,6 +1998,8 @@ $('#setBody').addEventListener('click', e=>{
     if(!confirm(`Remove controller ${c.topic}${n ? ` and its ${n} device(s)` : ''}?`)) return;
     home.ctls = home.ctls.filter(x=>x.id!==c.id); home.devices = home.devices.filter(d=>d.ctl!==c.id); saveHome(); drawSetup(); }
   else if(ds.relayEdit){ openEditor(ds.relayEdit); }
+  else if(ds.grpEdit){ openGroup(ds.grpEdit); }
+  else if(ds.grpAdd){ addGroup(ds.grpAdd); }
   else if('gateAdd' in ds){
     if(!home.ctls.length){ toast('Add a controller first'); return; }
     const c = home.ctls[home.ctls.length - 1], A = GATE_DEFAULT();
