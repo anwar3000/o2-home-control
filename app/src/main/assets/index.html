@@ -1157,9 +1157,11 @@ const CATS = [                        // order = order on screen
   {t:'light',   name:'Lights',      icon:'bulb', color:'#fde68a', test:d=>isLight(d)},
   {t:'climate', name:'Climate',     icon:'snow', color:'#38bdf8', test:d=>['ac','fan'].includes(d.icon) || (d.icon === 'heater' && !/water/i.test(d.name))},
   {t:'tv',      name:'TV',          icon:'tv',   color:'#f472b6', test:d=>['tv','projector'].includes(d.icon)}];
+const hasClim = rid => inRoom(rid).filter(d=>CATS[3].test(d)).length >= 2;
 function summaryIn(rid){             // kinds of devices in a room, plus anything that is not one of them
   const devs = inRoom(rid), taken = new Set(), out = [];
-  CATS.forEach(c=>{ const m = devs.filter(d=>canOff(d) && !taken.has(d) && c.test(d));
+  const split = !!roomById(rid)?.splitClimate;
+  CATS.forEach(c=>{ if(split && c.t === 'climate') return; const m = devs.filter(d=>canOff(d) && !taken.has(d) && c.test(d));
     if(m.length){ m.forEach(d=>taken.add(d)); out.push({cat:c, rid, members:m, id:`cat|${rid}|${c.t}`}); } });
   const all = [...out, ...devs.filter(d=>!taken.has(d))], ord = (home.order || {})[rid] || [];
   const pos = x => { const i = ord.indexOf(x.id); return i < 0 ? 1e4 + all.indexOf(x) : i; };
@@ -2055,11 +2057,12 @@ function drawSetup(){
   document.querySelectorAll('#stabs button').forEach(b=>b.classList.toggle('sel', b.dataset.tab===stab));
   const B = $('#setBody');
   if(stab === 'rooms'){
-    B.innerHTML = `<p class="sub">Rooms appear as tabs at the top. Use the arrows to change the order.</p>`
+    B.innerHTML = `<p class="sub">Use the arrows to change the order of the rooms.</p>`
       + home.rooms.map((r,i)=>`<div class="lrow"><input type="text" value="${esc(r.name)}" data-room-name="${r.id}" maxlength="24">
           <button class="icb" data-room-up="${i}" aria-label="Move up">${icon('up')}</button>
           <button class="icb" data-room-down="${i}" aria-label="Move down">${icon('down')}</button>
-          <button class="icb" data-room-del="${r.id}" aria-label="Delete">${icon('trash')}</button></div>`).join('')
+          <button class="icb" data-room-del="${r.id}" aria-label="Delete">${icon('trash')}</button></div>
+          ${hasClim(r.id) ? `<label class="tgl" style="margin:-2px 0 12px"><span>${esc(r.name)}: AC and fan as two buttons<small>In All rooms. Off = one Climate button</small></span><input type="checkbox" data-room-split="${r.id}" ${r.splitClimate?'checked':''}><span class="sw"></span></label>` : ''}`).join('')
       + `<div class="actions" style="margin-top:14px"><button class="btn" data-room-add>+ Add room</button></div>`;
   } else if(stab === 'ctls'){
     const opts = sel => Array.from({length:32},(_,i)=>String(i+1).padStart(2,'0')).map(n=>`<option value="o2/villa/${n}" ${sel===`o2/villa/${n}`?'selected':''}>o2/villa/${n}</option>`).join('');
@@ -2184,6 +2187,7 @@ $('#stabs').onclick = e=>{ const b = e.target.closest('[data-tab]'); if(b){ stab
 $('#setBody').addEventListener('input', e=>{
   const t = e.target, ds = t.dataset;
   if(ds.roomName){ const r = roomById(ds.roomName); if(r){ r.name = t.value.trim() || 'Room'; saveHome(); } }
+  if(ds.roomSplit){ const r = roomById(ds.roomSplit); if(r){ r.splitClimate = t.checked; saveHome(); render(); } }
   else if(ds.ctlIp){ ctlById(ds.ctlIp).ip = t.value.trim(); saveHome(); }
   else if(ds.ctlPass){ ctlById(ds.ctlPass).webpass = t.value; saveHome(); }
   else if(ds.ctlCustom){ ctlById(ds.ctlCustom).topic = t.value.trim().replace(/^\/+|\/+$/g,''); saveHome(); }
