@@ -1,0 +1,15 @@
+{
+  "mqtt": { "host": "127.0.0.1", "port": 1883, "user": "", "pass": "" },
+  "interval": 5,
+  "meters": [
+    {
+      "name": "Main power",
+      "topic": "o2/energy/main",
+      "id": "bf97ea86b7d6185a9cplvj",
+      "ip": "192.168.10.XX",
+      "key": "PUT-LOCAL-KEY-HERE",
+      "version": "auto",
+      "map": {}
+    }
+  ]
+}

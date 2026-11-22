@@ -76,3 +76,25 @@ Every room in one window, one small button per kind of device: **Cove lights · 
 - **Arrange** (top bar) works here too: drag the grip to reorder the buttons in each room.
 - Setup → General: *All rooms – small icons only*, and *Open the app on*: last visited room, All rooms or a fixed room.
 - Setup → General → *All rooms – buttons*: By type · Every device · Large.
+
+## Power meter – Tuya PC473 (3-phase clamp meter)
+
+The app shows live power at the top (⚡ chip), a Power card in All rooms (total kW, L1/L2/L3, kWh) and a detail sheet
+(voltage, current, power, PF per phase, frequency, relay switch, raw data points).
+
+The meter is read **locally** by a small bridge on the Pi (tinytuya → MQTT). After setup no Tuya cloud is needed.
+
+1. Install on the Pi (same network as the meter):
+   `curl -fsSL https://raw.githubusercontent.com/anwar3000/o2-home-control/main/install-pi-power.sh | sudo bash`
+2. Find the meter's local IP + protocol: `cd /opt/o2-power && sudo ./venv/bin/python -m tinytuya scan`
+3. Get the **local key** (one time): create a free Cloud project on https://iot.tuya.com, link your Smart Life / Tuya app account
+   (Devices → Link App Account → scan QR), then run `sudo ./venv/bin/python -m tinytuya wizard` with the project's Access ID / Secret.
+   The device ID is the *Virtual ID* from the Tuya app (Device Information).
+4. Edit `/etc/o2-power.json` (ip, key; mqtt user/pass if your broker needs them) → `sudo systemctl restart o2-power`
+   → `journalctl -u o2-power -f`.
+5. In the app: Setup → Controllers → **+ Add power meter**, topic `o2/energy/main`.
+
+MQTT: `o2/energy/main/state` (retained JSON: power W, current A, energy kWh, freq, phases[v,a,w,pf,kwh], dps raw),
+`o2/energy/main/set` `{"cmd":"get"}` or `{"relay":true|false}`.
+Default data points (PC473/PC321): 101-106 L1, 111-116 L2, 121-126 L3 (V×0.1, A×0.001, W, PF×0.01, kWh×0.01), 131 total kWh,
+132 total A, 133 total W, 135 Hz. Different firmware? Override in `"map"`, e.g. `"power": [115, 1]`.

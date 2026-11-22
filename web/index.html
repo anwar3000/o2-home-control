@@ -448,6 +448,44 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 #sStatus,.sitem .st small,.pt-tx small{display:none !important}
 .sitem .st b{font-size:15.5px}
 .pt-tx b{font-size:30px}
+/* power meter (Tuya PC473 via the Pi bridge) */
+.pwrchip{display:none;align-items:center;gap:5px;height:42px;padding:0 12px;border-radius:13px;background:var(--card);border:1px solid var(--line);color:#fde68a;font-weight:700;font-size:14.5px;flex:none;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pwrchip svg{width:17px;height:17px;fill:#fbbf24;stroke:#fbbf24}
+.pwrchip.show{display:flex}
+.pwrchip.off{color:var(--mute)}
+.pwrchip.off svg{fill:none;stroke:var(--mute)}
+.pcard{display:block;width:100%;text-align:left;margin-top:14px;padding:14px 16px 12px;border-radius:22px;color:#e9edf5;
+  background:radial-gradient(120% 140% at 0% 0%,rgba(251,191,36,.18),transparent 55%),linear-gradient(165deg,#171d2b,#10141e);border:1px solid rgba(251,191,36,.18)}
+.pcard:active{transform:scale(.99)}
+.pcard .ph{display:flex;align-items:center;gap:12px}
+.pcard .pi{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;background:rgba(251,191,36,.16);flex:none}
+.pcard .pi svg{width:26px;height:26px;fill:#fbbf24;stroke:#fbbf24;filter:drop-shadow(0 0 8px rgba(251,191,36,.6))}
+.pcard .pt{flex:1;min-width:0}
+.pcard .pt small{display:block;font-size:12.5px;color:#9aa3b5;font-weight:600}
+.pcard .pt b{display:block;font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.1;font-variant-numeric:tabular-nums}
+.pcard .pt b i{font-style:normal;font-size:16px;font-weight:700;color:#cbd2de;margin-left:3px}
+.pcard .pe{text-align:right;font-size:12px;color:#9aa3b5;font-weight:600;line-height:1.35}
+.pcard .pe b{display:block;font-size:15px;color:#e9edf5}
+.pcard .pps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.pcard .pp{padding:8px 10px;border-radius:13px;background:rgba(255,255,255,.04)}
+.pcard .pp small{display:flex;justify-content:space-between;font-size:11px;color:#8e97aa;font-weight:700}
+.pcard .pp b{display:block;font-size:15px;font-weight:750;margin-top:2px;font-variant-numeric:tabular-nums}
+.pcard .pp .pbr{height:4px;border-radius:2px;background:rgba(255,255,255,.07);margin-top:6px;overflow:hidden}
+.pcard .pp .pbr i{display:block;height:100%;border-radius:2px;background:linear-gradient(90deg,#fbbf24,#f97316)}
+.pcard.off{border-color:var(--line);background:linear-gradient(165deg,#171d2b,#10141e)}
+.pcard.off .pi svg{fill:none;stroke:#8e97aa;filter:none}
+.ptab{width:100%;border-collapse:collapse;margin-top:12px;font-variant-numeric:tabular-nums}
+.ptab th,.ptab td{padding:10px 6px;text-align:right;font-size:14px;border-bottom:1px solid var(--line)}
+.ptab th{font-size:12px;color:var(--mute);font-weight:700}
+.ptab td:first-child,.ptab th:first-child{text-align:left;font-weight:700}
+.pbig{font-size:44px;font-weight:800;letter-spacing:-.03em;margin:4px 0 0;font-variant-numeric:tabular-nums}
+.pbig i{font-style:normal;font-size:20px;color:var(--mute);margin-left:4px}
+.pkv{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.pkv div{padding:10px;border-radius:14px;background:#0d111b;border:1px solid var(--line)}
+.pkv small{display:block;font-size:11.5px;color:var(--mute);font-weight:600}
+.pkv b{font-size:16px;font-variant-numeric:tabular-nums}
+.praw{margin-top:14px;font-size:12px;color:var(--mute)}
+.praw pre{white-space:pre-wrap;word-break:break-all;background:#0d111b;border-radius:12px;padding:10px;margin:8px 0 0;max-height:180px;overflow:auto}
 .ov{position:fixed;inset:0;z-index:40;background:rgba(2,4,9,.6);display:none;align-items:flex-end;justify-content:center}
 .ov.show{display:flex}
 .sheet{width:100%;max-width:560px;max-height:92vh;max-height:92dvh;overflow:auto;background:#121724;border-top:1px solid var(--line);
@@ -758,6 +796,7 @@ code{font-size:12px;background:rgba(255,255,255,.07);padding:1px 6px;border-radi
       <h1 id="homeName">My Home</h1>
       <div class="status"><span class="dot" id="dot"></span><span id="statusTxt">Connecting…</span></div>
     </div>
+    <button class="pwrchip" id="pwrChip" aria-label="Power now"></button>
     <button class="icb" id="viewBtn" aria-label="Switch between buttons and map"></button>
     <button class="icb" id="setBtn" aria-label="Setup"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
   </div>
@@ -860,6 +899,25 @@ code{font-size:12px;background:rgba(255,255,255,.07);padding:1px 6px;border-radi
     <p class="sub" id="catSub"></p>
     <div class="grp catd"><div class="gms" id="catBody"></div></div>
     <div class="catacts"><button class="btn" id="catAll"></button><button class="btn" id="catRoom">Open room</button></div>
+  </div>
+</div>
+<!-- power meter -->
+<div class="ov" id="pwrOv">
+  <div class="sheet">
+    <div class="grab"></div>
+    <div id="pwrBody"></div>
+    <div class="actions"><button class="btn" id="pwrEdit">Settings</button><button class="btn pri" id="pwrClose">Close</button></div>
+  </div>
+</div>
+<div class="ov" id="mtrOv">
+  <div class="sheet">
+    <div class="grab"></div>
+    <h2>Power meter</h2>
+    <p class="sub">Readings come from the Pi bridge (install-pi-power.sh), which reads the Tuya meter on your network and sends them over MQTT.</p>
+    <label>Name</label><input id="mtName" maxlength="30">
+    <label>MQTT topic</label><input id="mtTopic" autocapitalize="off" spellcheck="false" placeholder="o2/energy/main">
+    <div class="hint">Same as "topic" in /etc/o2-power.json on the Pi.</div>
+    <div class="actions"><button class="btn danger small" id="mtDel">Delete</button><button class="btn" id="mtCancel">Cancel</button><button class="btn pri" id="mtSave">Save</button></div>
   </div>
 </div>
 <!-- group button editor -->
@@ -972,6 +1030,7 @@ const ICONS = {
   gate:`<path d="M3 21V4M21 21V4"/><path d="M3 8h18M3 18h18"/><path d="M7.5 8v10M12 8v10M16.5 8v10"/>`,
   snow:`<path d="M12 2v20M3.3 7l17.4 10M3.3 17L20.7 7"/><path d="M9.5 3.5L12 6l2.5-2.5M9.5 20.5L12 18l2.5 2.5M4 10.3l3.4-.9-.9-3.4M20 13.7l-3.4.9.9 3.4M6.5 17.9l.9-3.4L4 13.6M17.5 6.1l-.9 3.4 3.4.9"/>`,
   water:`<path d="M12 21v-5M8 21h8"/><circle cx="12" cy="13" r="3"/><path class="flow" d="M5 5l3 3M19 5l-3 3M12 2v4"/>`,
+  zap:`<path d="M13 2L4.5 13.5H11L10 22l8.5-11.5H12L13 2z"/>`,
   power:`<path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.8 0"/>`,
   moon:`<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>`,
   music:`<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>`,
@@ -1331,14 +1390,14 @@ function render(){
     document.querySelectorAll('.room[data-room]').forEach(el=>renderRoomCanvas(el));
   } else {
     if(inAll){
-      main.innerHTML = '<div class="secgrid">' + roomsToShow.map(r=>{ const list = inRoom(r.id), n = onCount(list);
+      main.innerHTML = meters().map(pcardHTML).join('') + '<div class="secgrid">' + roomsToShow.map(r=>{ const list = inRoom(r.id), n = onCount(list);
         return `<div class="sec" data-sec="${esc(r.id)}"><div class="sh"><button class="shl" data-scope="${esc(r.id)}" aria-label="Open ${esc(r.name)}"><b>${esc(r.name)}</b><small>${n ? n+' on' : ''}</small>${icon('right')}</button>
           <button class="soff" data-roomoff="${esc(r.id)}" aria-label="Turn off ${esc(r.name)}">${icon('power')}</button></div><div class="rows">${(cfg.allSize === 'summary' ? summaryIn(r.id).map(x=>x.cat ? catHTML(x) : tileHTML(x)) : rowsIn(r.id).map(tileHTML)).join('')}</div></div>`; }).join('') + '</div>';
     } else {
       main.innerHTML = `<div class="rows" style="margin-top:12px">${rowsIn(roomsToShow[0].id).map(tileHTML).join('')}</div>`;
     }
   }
-  status();
+  status(); drawPower();
 }
 function mapCardHTML(r, mini){
   const list = inRoom(r.id), n = onCount(list);
@@ -1508,8 +1567,66 @@ function appUrl(url, away){
 cfg.url = appUrl(cfg.url); cfg.awayUrl = appUrl(cfg.awayUrl, true);
 function setConn(kind, txt){ conn = {kind, txt}; status(); }
 const activeCtls = () => home.ctls.filter(c=>used().some(d=>d.ctl===c.id));
+/* ---- power meters ---- */
+const meters = () => (home.meters || []);
+const meterSt = {};
+const fmtW = w => w == null ? '—' : Math.abs(w) >= 1000 ? `${(w/1000).toFixed(w >= 10000 ? 1 : 2)}<i>kW</i>` : `${Math.round(w)}<i>W</i>`;
+const fmtWt = w => w == null ? '—' : Math.abs(w) >= 1000 ? `${(w/1000).toFixed(2)} kW` : `${Math.round(w)} W`;
+const fx = (v, d) => v == null ? '—' : (+v).toFixed(d);
+const mLive = m => { const s = meterSt[m.id]; return s && s.online !== false && Date.now()/1000 - (s.ts || 0) < 120 ? s : null; };
+function pcardHTML(m){
+  const s = mLive(m), ph = (s && s.phases) || [], mx = Math.max(1, ...ph.map(p=>Math.abs(p.w || 0)));
+  return `<button class="pcard ${s?'':'off'}" data-meter="${m.id}" aria-label="${esc(m.name)}">
+    <div class="ph"><span class="pi">${icon('zap')}</span><span class="pt"><small>${esc(m.name)} · now</small><b>${s ? fmtW(s.power) : '<i style="margin:0">Meter offline</i>'}</b></span>
+      ${s && s.energy != null ? `<span class="pe"><b>${Math.round(s.energy).toLocaleString()} kWh</b>total</span>` : ''}</div>
+    ${s && ph.length > 1 ? `<div class="pps">${ph.map((p, i)=>`<div class="pp"><small><span>L${i+1}</span><span>${fx(p.v, 0)} V</span></small><b>${fmtWt(p.w)}</b><div class="pbr"><i style="width:${Math.round(Math.abs(p.w || 0) / mx * 100)}%"></i></div></div>`).join('')}</div>` : ''}
+  </button>`;
+}
+let pwrOpen = null;
+function drawPower(){
+  const ms = meters(), s0 = ms.length ? mLive(ms[0]) : null, chip = $('#pwrChip');
+  chip.classList.toggle('show', ms.length > 0); chip.classList.toggle('off', !s0);
+  chip.innerHTML = icon('zap') + (s0 ? fmtWt(s0.power) : '—');
+  document.querySelectorAll('#main .pcard').forEach(el=>{ const m = ms.find(x=>x.id === el.dataset.meter); if(m) el.outerHTML = pcardHTML(m); });
+  if(pwrOpen && $('#pwrOv').classList.contains('show')) drawPwrSheet();
+}
+function drawPwrSheet(){
+  const m = meters().find(x=>x.id === pwrOpen); if(!m) return;
+  const raw = meterSt[m.id], s = mLive(m), ph = (s && s.phases) || [];
+  $('#pwrBody').innerHTML = `<h2>${esc(m.name)}</h2>
+    <p class="sub">${s ? `Updated ${new Date(s.ts * 1000).toLocaleTimeString()}` : raw ? 'Meter offline — check the Pi bridge' : 'Waiting for data from the Pi bridge…'}</p>
+    <div class="pbig">${s ? fmtW(s.power) : '—'}</div>
+    <div class="pkv"><div><small>Current</small><b>${s ? fx(s.current, 1) + ' A' : '—'}</b></div><div><small>Energy total</small><b>${s && s.energy != null ? (+s.energy).toFixed(1) + ' kWh' : '—'}</b></div><div><small>Frequency</small><b>${s && s.freq != null ? fx(s.freq, 1) + ' Hz' : '—'}</b></div></div>
+    ${ph.length ? `<table class="ptab"><tr><th>Phase</th><th>Voltage</th><th>Current</th><th>Power</th><th>PF</th></tr>
+      ${ph.map((p, i)=>`<tr><td>L${i+1}</td><td>${fx(p.v, 1)} V</td><td>${fx(p.a, 2)} A</td><td>${fmtWt(p.w)}</td><td>${p.pf != null ? fx(p.pf, 2) : '—'}</td></tr>`).join('')}</table>` : ''}
+    ${s && typeof s.relay === 'boolean' ? `<label class="tgl" style="margin-top:14px"><span>Meter relay<small>Dry contact on the PC473</small></span><input type="checkbox" id="pwrRelay" ${s.relay?'checked':''}><span class="sw"></span></label>` : ''}
+    ${raw && raw.dps ? `<details class="praw"><summary>Raw data points</summary><pre>${esc(JSON.stringify(raw.dps))}</pre></details>` : ''}`;
+  const r = $('#pwrRelay'); if(r) r.onchange = e=>{ if(mqttUp()) client.publish(`${m.topic}/set`, JSON.stringify({relay: e.target.checked})); };
+}
+function openPower(id){ pwrOpen = id || meters()[0]?.id; if(!pwrOpen) return; drawPwrSheet(); $('#pwrOv').classList.add('show');
+  const m = meters().find(x=>x.id === pwrOpen); if(m && mqttUp()) client.publish(`${m.topic}/set`, JSON.stringify({cmd:'get'})); }
+$('#pwrChip').onclick = ()=> openPower();
+$('#pwrClose').onclick = ()=> $('#pwrOv').classList.remove('show');
+$('#pwrEdit').onclick = ()=>{ $('#pwrOv').classList.remove('show'); openMeter(pwrOpen); };
+$('#main').addEventListener('click', e=>{ const p = e.target.closest('.pcard'); if(p) openPower(p.dataset.meter); });
+let mdraft = null;
+function openMeter(id){
+  const m = meters().find(x=>x.id === id);
+  mdraft = m ? {...m} : {id: uid('m'), name:'Main power', topic:'o2/energy/main', isNew:true};
+  $('#mtName').value = mdraft.name; $('#mtTopic').value = mdraft.topic; $('#mtDel').style.display = mdraft.isNew ? 'none' : '';
+  $('#mtrOv').classList.add('show');
+}
+$('#mtCancel').onclick = ()=> $('#mtrOv').classList.remove('show');
+$('#mtDel').onclick = ()=>{ home.meters = meters().filter(x=>x.id !== mdraft.id); saveHome(); $('#mtrOv').classList.remove('show'); afterGroup(); };
+$('#mtSave').onclick = ()=>{
+  const name = $('#mtName').value.trim() || 'Power', topic = $('#mtTopic').value.trim().replace(/^\/+|\/+$/g,'') || 'o2/energy/main';
+  const isNew = mdraft.isNew, m = {id: mdraft.id, name, topic};
+  home.meters = isNew ? [...meters(), m] : meters().map(x=>x.id === m.id ? m : x); saveHome();
+  $('#mtrOv').classList.remove('show'); afterGroup(); if(mqttUp()) subscribeAll(); toast(isNew ? 'Power meter added' : 'Saved');
+};
 function subscribeAll(){
   if(!mqttUp()) return;
+  meters().forEach(m=>{ client.subscribe(`${m.topic}/state`); client.publish(`${m.topic}/set`, JSON.stringify({cmd:'get'})); });
   used().filter(isWater).forEach(d=>{ client.subscribe(`${d.topic}/state`); client.publish(`${d.topic}/set`, JSON.stringify({cmd:'get'})); });
   activeCtls().forEach(c=>{ const b = c.topic;
     client.subscribe([`stat/${b}/+`, `tele/${b}/STATE`, `tele/${b}/LWT`]);
@@ -1600,6 +1717,8 @@ function applyPower(ctlId, j){
 }
 function onMsg(topic, buf){
   const msg = buf.toString();
+  const pm = meters().find(m=>topic === `${m.topic}/state`);
+  if(pm){ try{ meterSt[pm.id] = JSON.parse(msg); }catch(e){} drawPower(); return; }
   const w = used().find(d=>isWater(d) && topic === `${d.topic}/state`);
   if(w){ let s; try{ s = JSON.parse(msg); }catch(e){ s = {state: norm(msg) || 'OFF'}; }
     waterSt[w.id] = s; power[keyOf(w)] = String(s.state).toUpperCase() === 'ON' ? 'ON' : 'OFF'; updateDevice(keyOf(w));
@@ -2095,6 +2214,10 @@ function drawSetup(){
           <small>${esc(roomById(g.room)?.name || 'No room')} · ${gMembers(g).length} devices</small></span>
           <button class="icb" data-grp-edit="${g.id}" aria-label="Edit">${icon('pen')}</button></div>`).join('')
       + `<div class="actions" style="margin-top:10px"><button class="btn" data-grp-add="lights">+ Lights button</button><button class="btn" data-grp-add="climate">+ Climate button</button></div>`
+      + `<label style="margin-top:24px">Power meters</label><div class="hint" style="margin-top:0">Tuya PC473 and similar, read by the Pi bridge (install-pi-power.sh).</div>`
+      + meters().map(m=>`<div class="lrow"><span class="wl">${icon('zap')}<b>${esc(m.name)}</b><small>${esc(m.topic)} · ${mLive(m) ? fmtWt(mLive(m).power) : 'no data'}</small></span>
+          <button class="icb" data-meter-edit="${m.id}" aria-label="Edit">${icon('pen')}</button></div>`).join('')
+      + `<div class="actions" style="margin-top:10px"><button class="btn" data-meter-add>+ Add power meter</button></div>`
       + `<label style="margin-top:24px">Gates &amp; Node-RED devices</label>`
       + used().filter(d=>isGate(d) || isWater(d)).map(d=>`<div class="lrow"><span class="wl">${icon(isGate(d) ? 'gate' : 'water')}<b>${esc(d.name)}</b>
           <small>${isGate(d) ? esc(ctlById(d.ctl)?.topic || '') : esc(d.topic)}</small></span>
@@ -2235,6 +2358,8 @@ $('#setBody').addEventListener('click', e=>{
   else if(ds.relayEdit){ openEditor(ds.relayEdit); }
   else if(ds.grpEdit){ openGroup(ds.grpEdit); }
   else if(ds.grpAdd){ addGroup(ds.grpAdd); }
+  else if(ds.meterEdit){ openMeter(ds.meterEdit); }
+  else if('meterAdd' in ds){ openMeter(null); }
   else if('gateAdd' in ds){
     if(!home.ctls.length){ toast('Add a controller first'); return; }
     const c = home.ctls[home.ctls.length - 1], A = GATE_DEFAULT();
