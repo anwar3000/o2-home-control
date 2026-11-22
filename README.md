@@ -71,7 +71,8 @@ One full-width button that controls several devices — e.g. 2 cove lights + 2 s
 
 Every room in one window, one small button per kind of device: **Cove lights · Spot lights · Lights · Climate (AC + fan) · TV**, plus gate, watering and anything else.
 - **Tap**: all of that kind on / off (cove lights return to their last Low/High).
-- **Press and hold**: detailed controls — each cove Off/Low/High, each spot, AC, fan, TV…
-- **Gate**: tap opens / closes (the button shows what the next tap does); hold for Open · Half open · Close.
-- **Press and hold a room** (empty space or its name) to open that room's full controls.
+- **Gate**: tap opens / closes (the button shows what the next tap does); Open · Half open · Close are in the room.
+- **Press and hold any button** (or empty space in a room) to open that room with all its buttons.
+- **Arrange** (top bar) works here too: drag the grip to reorder the buttons in each room.
+- Setup → General: *All rooms – small icons only*, and *Open the app on*: last visited room, All rooms or a fixed room.
 - Setup → General → *All rooms – buttons*: By type · Every device · Large.

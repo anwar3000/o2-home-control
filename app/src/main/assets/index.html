@@ -396,6 +396,14 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .catd .gms{padding:0 12px 4px}
 .catacts{display:flex;gap:8px;margin-top:14px}
 .catacts .btn{flex:1}
+/* All rooms – small icon-only buttons */
+.all-icons.scope-all .rows{grid-template-columns:repeat(auto-fill,minmax(62px,1fr)) !important;gap:8px !important}
+.all-icons.scope-all .row.sz-s{min-height:62px !important;padding:6px !important;gap:0 !important;border-radius:16px !important;grid-column:span 1 !important}
+.all-icons.scope-all .row.sz-s .tx{display:none !important}
+.all-icons.scope-all .row.sz-s .ic{width:36px !important;height:36px !important}
+.all-icons.scope-all .row.sz-s .ic svg{width:26px !important;height:26px !important}
+.all-icons.scope-all .row.sz-s.cat .cn{top:3px;right:3px;min-width:16px;height:16px;font-size:9.5px;padding:0 4px}
+.editing.all-icons.scope-all .row.sz-s{min-height:72px !important;justify-content:flex-end !important}
 .ov{position:fixed;inset:0;z-index:40;background:rgba(2,4,9,.6);display:none;align-items:flex-end;justify-content:center}
 .ov.show{display:flex}
 .sheet{width:100%;max-width:560px;max-height:92vh;max-height:92dvh;overflow:auto;background:#121724;border-top:1px solid var(--line);
@@ -1029,6 +1037,7 @@ let cfg = Object.assign({url:defUrl, user:'', pass:'',                 // Home b
   awayUrl:'', awayUser:'', awayPass:'',                                  // Away broker (public / cloud, over the internet)
   broker:'auto', mode:'auto', awake:true, view:'buttons', scope:'all',
   allSize:'summary', roomSize:'large', style:'picture', labels:true, logo:false}, store.get('hc.cfg', {}));
+if(cfg.start && cfg.start !== 'last') cfg.scope = cfg.start;
 if(!store.get('hc.sum1', false)){ cfg.allSize = 'summary'; store.set('hc.sum1', true); store.set('hc.cfg', cfg); }
 if(!cfg.styleSet && cfg.style !== 'picture'){ cfg.style = 'picture'; }      // new default look until a style is picked by hand
 const saveHome = () => store.set('hc.home', home);
@@ -1107,7 +1116,9 @@ function summaryIn(rid){             // kinds of devices in a room, plus anythin
   const devs = inRoom(rid), taken = new Set(), out = [];
   CATS.forEach(c=>{ const m = devs.filter(d=>canOff(d) && !taken.has(d) && c.test(d));
     if(m.length){ m.forEach(d=>taken.add(d)); out.push({cat:c, rid, members:m, id:`cat|${rid}|${c.t}`}); } });
-  return [...out, ...devs.filter(d=>!taken.has(d))];
+  const all = [...out, ...devs.filter(d=>!taken.has(d))], ord = (home.order || {})[rid] || [];
+  const pos = x => { const i = ord.indexOf(x.id); return i < 0 ? 1e4 + all.indexOf(x) : i; };
+  return all.sort((a, b)=>pos(a) - pos(b));
 }
 const catById = id => { const [, rid, t] = id.split('|'); return summaryIn(rid).find(x=>x.cat && x.cat.t === t); };
 function catHTML(x){
@@ -1115,7 +1126,7 @@ function catHTML(x){
   const nm = one ? ms[0].name : c.name, ic = one ? ms[0].icon : c.icon, col = one ? ms[0].color : c.color;
   return `<button class="row sz-s cat ${n?'on':''} ${ms.some(m=>pending[keyOf(m)])?'pending':''}" style="--c:${col}" data-k="${x.id}" data-id="${x.id}"
     aria-label="${esc(nm)}: ${n ? n + ' on' : 'off'}. Press and hold for details">
-    <span class="ic">${icon(ic)}</span><span class="tx"><b>${esc(nm)}</b></span>${one ? '' : `<i class="cn">${n ? n + '/' + ms.length : ms.length}</i>`}</button>`;
+    <span class="ic">${icon(ic)}</span><span class="tx"><b>${esc(nm)}</b></span>${one ? '' : `<i class="cn">${n ? n + '/' + ms.length : ms.length}</i>`}${ARR(x, true)}</button>`;
 }
 const gateNext = d => { const l = gateLast[d.id]; const nx = l && (l.act === 'open' || l.act === 'half') ? 'close' : 'open'; return gateHas(d, nx) ? nx : null; };
 let catOpen = null;
@@ -1226,6 +1237,7 @@ function applyLook(){
   const b = document.body;
   b.classList.toggle('scope-all', cfg.scope === 'all');
   b.classList.toggle('all-compact', cfg.allSize !== 'normal');
+  b.classList.toggle('all-icons', !!cfg.allIcons && cfg.allSize !== 'normal');
   b.classList.toggle('room-large', cfg.roomSize !== 'normal');
   ['picture','color','bright','minimal'].forEach(x=>b.classList.toggle('style-' + x, (cfg.style || 'picture') === x));
   b.classList.toggle('nolabels', cfg.labels === false);
@@ -1691,7 +1703,7 @@ function allOff(){
 /* =================== INPUT =================== */
 const vib = ms => { try{ if(APP) Android.vibrate(ms); else if(navigator.vibrate) navigator.vibrate(ms); }catch(e){} };
 function activate(id, act){
-  if(String(id).startsWith('cat|')){ if(editing) openCat(id); else catToggle(id); return; }
+  if(String(id).startsWith('cat|')){ if(!editing) catToggle(id); return; }
   const d = home.devices.find(x=>x.id===id); if(!d) return;
   if(editing){ if(act === 'size'){ cycleSize(d); return; } openEditor(id); return; }
   if(isGroup(d) && act && act !== 'master'){ const ms = gMembers(d).filter(canOff);
@@ -1713,6 +1725,9 @@ function activate(id, act){
 }
 let press = null, secPress = null;
 function longPress(id){
+  if(cfg.scope === 'all' && !editing){          // All rooms: press and hold → that room with all its buttons
+    const rid = String(id).startsWith('cat|') ? id.split('|')[1] : home.devices.find(x=>x.id===id)?.room;
+    if(rid !== undefined){ goRoom(rid || ''); return; } }
   if(String(id).startsWith('cat|')) return openCat(id);
   const d = home.devices.find(x=>x.id===id);
   if(d && compactNow() && !editing){ if(isGate(d)) return openGate(d); if(isWater(d)) return openWater(d); }
@@ -1776,7 +1791,8 @@ document.addEventListener('pointerup', e=>{
       const ids = [...p.el.parentElement.children].map(c=>c.dataset.id).filter(Boolean);
       const slots = home.devices.map((d,i)=>ids.includes(d.id) ? i : -1).filter(i=>i >= 0);
       const byId = Object.fromEntries(home.devices.map(d=>[d.id, d]));
-      ids.forEach((id, j)=>{ home.devices[slots[j]] = byId[id]; });
+      const sec = p.el.closest('.sec'); if(sec && cfg.scope === 'all' && cfg.allSize === 'summary') (home.order || (home.order = {}))[sec.dataset.sec] = ids;
+      ids.filter(id=>byId[id]).forEach((id, j)=>{ home.devices[slots[j]] = byId[id]; });
       saveHome(); vib(10); render();
     }
     return;
@@ -2079,6 +2095,9 @@ function drawSetup(){
     const seg = (id, val, opts) => `<div class="segs" id="${id}">${opts.map(([v,l])=>`<button data-v="${v}" class="${val===v?'sel':''}">${l}</button>`).join('')}</div>`;
     B.innerHTML = `<label>Home name</label><input type="text" id="gName" value="${esc(home.name)}" maxlength="30">
       <label>All rooms – buttons</label>${seg('gAll', cfg.allSize, [['summary','By type'],['compact','Every device'],['normal','Large']])}
+      <label class="tgl"><span>All rooms – small icons only<small>No names, more buttons on one screen</small></span><input type="checkbox" id="gIcons" ${cfg.allIcons?'checked':''}><span class="sw"></span></label>
+      <label>Open the app on</label>
+      <select id="gStart"><option value="last">Last visited room</option><option value="all">All rooms</option>${home.rooms.map(r=>`<option value="${esc(r.id)}">${esc(r.name)}</option>`).join('')}</select>
       <label>Inside a room – buttons</label>${seg('gRoom', cfg.roomSize, [['large','Large'],['normal','Normal']])}
       <label>Button style</label>${seg('gStyle', cfg.style || 'picture', [['picture','Picture'],['color','Colour'],['bright','Bright'],['minimal','Minimal']])}
       <div class="hint">Picture: big pictures that light up · Colour: buttons glow in their own colour when on · Bright: white when on · Minimal: clean outlines.</div>
@@ -2097,6 +2116,9 @@ function drawSetup(){
       document.querySelectorAll(`#${id} button`).forEach(x=>x.classList.toggle('sel', x === b)); render(); }; };
     bindSeg('gAll', 'allSize'); bindSeg('gRoom', 'roomSize'); bindSeg('gStyle', 'style');
     $('#gStyle').addEventListener('click', ()=>{ cfg.styleSet = true; saveCfg(); });
+    $('#gIcons').onchange = e=>{ cfg.allIcons = e.target.checked; saveCfg(); render(); };
+    $('#gStart').value = cfg.start || 'last'; if(!$('#gStart').value) $('#gStart').value = 'last';
+    $('#gStart').onchange = e=>{ cfg.start = e.target.value; saveCfg(); };
     $('#gLabels').onchange = e=>{ cfg.labels = e.target.checked; saveCfg(); render(); };
     $('#gLogo').onchange = e=>{ cfg.logo = e.target.checked; saveCfg(); render(); };
     $('#gCopy').onclick = ()=>{ const t = $('#gJson'); t.select(); t.setSelectionRange(0, 1e7);
