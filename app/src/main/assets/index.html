@@ -387,6 +387,15 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .editing .grp .gcl{padding-right:56px}
 .rows .row.grp.slim{align-self:start}
 @media (min-width:900px){ .rows .row.grp.slim{grid-column:span 4} .rows .row.grp.slim.clim{grid-column:span 3} }
+/* All rooms "by type": one small button per kind of device, long-press for details */
+.row.sz-s small.gsub,.style-picture .row.sz-s small.gsub{display:block !important;font-size:10.5px;font-weight:600;color:#8e97aa;margin-top:2px;white-space:nowrap}
+.row.sz-s.cat .cn{position:absolute;top:6px;right:7px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;font-style:normal;font-size:10.5px;font-weight:700;
+  display:grid;place-items:center;background:rgba(255,255,255,.08);color:#aab2c3}
+.row.sz-s.cat.on .cn{background:var(--c);color:#0b0e16}
+.catd{margin:6px -12px 0}
+.catd .gms{padding:0 12px 4px}
+.catacts{display:flex;gap:8px;margin-top:14px}
+.catacts .btn{flex:1}
 .ov{position:fixed;inset:0;z-index:40;background:rgba(2,4,9,.6);display:none;align-items:flex-end;justify-content:center}
 .ov.show{display:flex}
 .sheet{width:100%;max-width:560px;max-height:92vh;max-height:92dvh;overflow:auto;background:#121724;border-top:1px solid var(--line);
@@ -790,6 +799,16 @@ code{font-size:12px;background:rgba(255,255,255,.07);padding:1px 6px;border-radi
   </div>
 </div>
 
+<!-- detail controls for a kind of device in a room (All rooms → long-press) -->
+<div class="ov" id="catOv">
+  <div class="sheet">
+    <div class="grab"></div>
+    <h2 id="catTitle"></h2>
+    <p class="sub" id="catSub"></p>
+    <div class="grp catd"><div class="gms" id="catBody"></div></div>
+    <div class="catacts"><button class="btn" id="catAll"></button><button class="btn" id="catRoom">Open room</button></div>
+  </div>
+</div>
 <!-- group button editor -->
 <div class="ov" id="grpOv">
   <div class="sheet">
@@ -1009,7 +1028,8 @@ function normGate(d){              // upgrade the earlier one-relay gate format
 let cfg = Object.assign({url:defUrl, user:'', pass:'',                 // Home broker (on home Wi-Fi)
   awayUrl:'', awayUser:'', awayPass:'',                                  // Away broker (public / cloud, over the internet)
   broker:'auto', mode:'auto', awake:true, view:'buttons', scope:'all',
-  allSize:'compact', roomSize:'large', style:'picture', labels:true, logo:false}, store.get('hc.cfg', {}));
+  allSize:'summary', roomSize:'large', style:'picture', labels:true, logo:false}, store.get('hc.cfg', {}));
+if(!store.get('hc.sum1', false)){ cfg.allSize = 'summary'; store.set('hc.sum1', true); store.set('hc.cfg', cfg); }
 if(!cfg.styleSet && cfg.style !== 'picture'){ cfg.style = 'picture'; }      // new default look until a style is picked by hand
 const saveHome = () => store.set('hc.home', home);
 const saveCfg  = () => store.set('hc.cfg', cfg);
@@ -1077,6 +1097,47 @@ function waterTxt(d){
   }
   return `Off · Auto ${s.auto ? 'on' : 'off'}`;
 }
+const CATS = [                        // order = order on screen
+  {t:'cove',    name:'Cove lights', icon:'cove', color:'#fbbf24', test:d=>isDual(d) || d.icon === 'cove'},
+  {t:'spot',    name:'Spot lights', icon:'spot', color:'#fb923c', test:d=>d.icon === 'spot'},
+  {t:'light',   name:'Lights',      icon:'bulb', color:'#fde68a', test:d=>isLight(d)},
+  {t:'climate', name:'Climate',     icon:'snow', color:'#38bdf8', test:d=>['ac','fan'].includes(d.icon) || (d.icon === 'heater' && !/water/i.test(d.name))},
+  {t:'tv',      name:'TV',          icon:'tv',   color:'#f472b6', test:d=>['tv','projector'].includes(d.icon)}];
+function summaryIn(rid){             // kinds of devices in a room, plus anything that is not one of them
+  const devs = inRoom(rid), taken = new Set(), out = [];
+  CATS.forEach(c=>{ const m = devs.filter(d=>canOff(d) && !taken.has(d) && c.test(d));
+    if(m.length){ m.forEach(d=>taken.add(d)); out.push({cat:c, rid, members:m, id:`cat|${rid}|${c.t}`}); } });
+  return [...out, ...devs.filter(d=>!taken.has(d))];
+}
+const catById = id => { const [, rid, t] = id.split('|'); return summaryIn(rid).find(x=>x.cat && x.cat.t === t); };
+function catHTML(x){
+  const ms = x.members, n = onCount(ms), one = ms.length === 1, c = x.cat;
+  const nm = one ? ms[0].name : c.name, ic = one ? ms[0].icon : c.icon, col = one ? ms[0].color : c.color;
+  return `<button class="row sz-s cat ${n?'on':''} ${ms.some(m=>pending[keyOf(m)])?'pending':''}" style="--c:${col}" data-k="${x.id}" data-id="${x.id}"
+    aria-label="${esc(nm)}: ${n ? n + ' on' : 'off'}. Press and hold for details">
+    <span class="ic">${icon(ic)}</span><span class="tx"><b>${esc(nm)}</b></span>${one ? '' : `<i class="cn">${n ? n + '/' + ms.length : ms.length}</i>`}</button>`;
+}
+const gateNext = d => { const l = gateLast[d.id]; const nx = l && (l.act === 'open' || l.act === 'half') ? 'close' : 'open'; return gateHas(d, nx) ? nx : null; };
+let catOpen = null;
+function openCat(id){ catOpen = id; drawCat(); $('#catOv').classList.add('show'); }
+function drawCat(){
+  const x = catById(catOpen || ''); if(!x){ $('#catOv').classList.remove('show'); catOpen = null; return; }
+  const ms = x.members, n = onCount(ms), r = roomById(x.rid);
+  $('#catTitle').textContent = ms.length === 1 ? ms[0].name : x.cat.name;
+  $('#catSub').textContent = `${r ? r.name : 'Other'} · ${n ? `${n} of ${ms.length} on` : 'All off'}`;
+  $('#catBody').innerHTML = ms.map(memberHTML).join('');
+  $('#catAll').textContent = n ? 'All off' : 'All on';
+  $('#catAll').className = 'btn ' + (n ? '' : 'pri');
+}
+$('#catBody').addEventListener('click', e=>{
+  const m = e.target.closest('[data-mid]'); if(!m) return; const lv = e.target.closest('[data-lv]');
+  activate(m.dataset.mid, lv ? lv.dataset.lv : null);
+});
+$('#catAll').onclick = ()=>{ const x = catById(catOpen || ''); if(x) catToggle(x.id); };
+$('#catRoom').onclick = ()=>{ const x = catById(catOpen || ''); $('#catOv').classList.remove('show'); if(x) goRoom(x.rid); };
+function catToggle(id){ const x = catById(id); if(!x) return; const ms = x.members.filter(canOff), any = ms.some(devOn);
+  runList(ms.map(m=>[m, any ? 'OFF' : 'ON']), `${ms.length === 1 ? ms[0].name : x.cat.name} ${any ? 'off' : 'on'}`); }
+function goRoom(rid){ cfg.scope = rid; saveCfg(); vib(20); render(); window.scrollTo({top:0, behavior:'smooth'}); }
 const compactNow = () => cfg.scope === 'all' && cfg.allSize !== 'normal';
 function memberHTML(m){
   const k = keyOf(m), off = ctlOnline(m.ctl) === false;
@@ -1132,7 +1193,7 @@ function tileHTML(d){
     const st = isGate(d) ? gateTxt(d) : isWater(d) ? waterTxt(d) : isDual(d) ? ({high:'High', low:'Low', off:'Off'}[level(d)] || 'No status') : stateTxt(d);
     const unk = !isGate(d) && !isWater(d) && (isDual(d) ? level(d) === null : !power[k]);
     return `<button class="row sz-s ${on?'on':''} ${unk?'unknown':''} ${pending[k]?'pending':''} ${off?'offline':''}" style="--c:${d.color}" data-k="${k}" data-id="${d.id}" aria-label="${esc(d.name)}: ${esc(off ? 'Offline' : st)}">
-      <span class="ic">${icon(d.icon)}</span><span class="tx"><b>${esc(d.name)}</b></span>${ARR(d, true)}</button>`;
+      <span class="ic">${icon(d.icon)}</span><span class="tx"><b>${esc(d.name)}</b>${isGate(d) && gateNext(d) && !off ? `<small class="gsub">Tap: ${GATE_LBL[gateNext(d)]}</small>` : ''}</span>${ARR(d, true)}</button>`;
   }
   if(isGate(d)){
     const k = keyOf(d), off = ctlOnline(d.ctl) === false, A = d.actions || {};
@@ -1210,7 +1271,7 @@ function render(){
     if(inAll){
       main.innerHTML = '<div class="secgrid">' + roomsToShow.map(r=>{ const list = inRoom(r.id), n = onCount(list);
         return `<div class="sec" data-sec="${esc(r.id)}"><div class="sh"><button class="shl" data-scope="${esc(r.id)}" aria-label="Open ${esc(r.name)}"><b>${esc(r.name)}</b><small>${n ? n+' on' : ''}</small>${icon('right')}</button>
-          <button class="soff" data-roomoff="${esc(r.id)}">${icon('power')}Turn off</button></div><div class="rows">${rowsIn(r.id).map(tileHTML).join('')}</div></div>`; }).join('') + '</div>';
+          <button class="soff" data-roomoff="${esc(r.id)}">${icon('power')}Turn off</button></div><div class="rows">${(cfg.allSize === 'summary' ? summaryIn(r.id).map(x=>x.cat ? catHTML(x) : tileHTML(x)) : rowsIn(r.id).map(tileHTML)).join('')}</div></div>`; }).join('') + '</div>';
     } else {
       main.innerHTML = `<div class="rows" style="margin-top:12px">${rowsIn(roomsToShow[0].id).map(tileHTML).join('')}</div>`;
     }
@@ -1232,6 +1293,8 @@ function updateDevice(k){
   const ids = new Set(list.map(d=>d.id));
   document.querySelectorAll('#main .row.grp, #main .row.grp-s').forEach(el=>{ const g = home.devices.find(x=>x.id===el.dataset.id);
     if(g && (g.members || []).some(id=>ids.has(id)) && !el.classList.contains('lifting')) el.outerHTML = tileHTML(g); });
+  document.querySelectorAll('#main .row.cat').forEach(el=>{ const x = catById(el.dataset.id); if(x && x.members.some(m=>ids.has(m.id))) el.outerHTML = catHTML(x); });
+  if(catOpen && $('#catOv').classList.contains('show')) drawCat();
   refreshCounts(); status();
 }
 /* ---- rooms: big room bar (‹ name ›), room picker sheet, swipe ---- */
@@ -1628,6 +1691,7 @@ function allOff(){
 /* =================== INPUT =================== */
 const vib = ms => { try{ if(APP) Android.vibrate(ms); else if(navigator.vibrate) navigator.vibrate(ms); }catch(e){} };
 function activate(id, act){
+  if(String(id).startsWith('cat|')){ if(editing) openCat(id); else catToggle(id); return; }
   const d = home.devices.find(x=>x.id===id); if(!d) return;
   if(editing){ if(act === 'size'){ cycleSize(d); return; } openEditor(id); return; }
   if(isGroup(d) && act && act !== 'master'){ const ms = gMembers(d).filter(canOff);
@@ -1638,7 +1702,7 @@ function activate(id, act){
     return; }
   if(isGroup(d)){ const ms = gMembers(d).filter(canOff), any = ms.some(devOn);
     runList(ms.map(m=>[m, any ? 'OFF' : 'ON']), `${d.name} ${any ? 'off' : 'on'}`); return; }
-  if(isGate(d)){ if(act) gateDo(d, act); else openGate(d); return; }
+  if(isGate(d)){ if(act) gateDo(d, act); else if(compactNow() && gateNext(d)) gateDo(d, gateNext(d)); else openGate(d); return; }
   if(isDual(d)){ vib(12); const lv = level(d);
     if(act === 'low' || act === 'high' || act === 'off') dualSet(d, act);
     else dualSet(d, lv === 'low' || lv === 'high' ? 'off' : (dualLast[d.id] || 'high'));
@@ -1647,7 +1711,21 @@ function activate(id, act){
   vib(12); const st = power[keyOf(d)];
   send(d, st==='ON' ? 'OFF' : st==='OFF' ? 'ON' : 'TOGGLE');
 }
-let press = null;
+let press = null, secPress = null;
+function longPress(id){
+  if(String(id).startsWith('cat|')) return openCat(id);
+  const d = home.devices.find(x=>x.id===id);
+  if(d && compactNow() && !editing){ if(isGate(d)) return openGate(d); if(isWater(d)) return openWater(d); }
+  openEditor(id);
+}
+document.addEventListener('pointerdown', e=>{          // press and hold a room in All rooms → open that room
+  const sec = !e.target.closest('#main .row, button') && e.target.closest('#main .sec');
+  if(!sec || editing) return;
+  const x = e.clientX, y = e.clientY;
+  secPress = {x, y, t: setTimeout(()=>{ secPress = null; goRoom(sec.dataset.sec); }, 550)};
+});
+['pointerup','pointercancel'].forEach(ev=>document.addEventListener(ev, ()=>{ if(secPress){ clearTimeout(secPress.t); secPress = null; } }));
+document.addEventListener('pointermove', e=>{ if(secPress && Math.hypot(e.clientX - secPress.x, e.clientY - secPress.y) > 8){ clearTimeout(secPress.t); secPress = null; } });
 document.addEventListener('pointerdown', e=>{
   const el = e.target.closest('#main .row, .spot');
   if(!el || (e.button && e.button !== 0)) return;
@@ -1661,7 +1739,7 @@ document.addEventListener('pointerdown', e=>{
   press = { el, id: gm ? gm.dataset.mid : el.dataset.id, act: e.target.closest('[data-size]') ? 'size' : ab ? (ab.dataset.gact || ab.dataset.wact || ab.dataset.lv || ab.dataset.gx) : null, pid: e.pointerId, x: e.clientX, y: e.clientY, moved:false, long:false,
             drag: editing && el.classList.contains('spot'), room: el.closest('.room') };
   if(press.drag){ try{ el.setPointerCapture(e.pointerId); }catch(_){} }
-  press.timer = setTimeout(()=>{ if(press && !press.moved){ press.long = true; vib(35); openEditor(press.id); } }, 550);
+  press.timer = setTimeout(()=>{ if(press && !press.moved){ press.long = true; vib(35); longPress(press.id); } }, 550);
 });
 document.addEventListener('pointermove', e=>{
   if(!press || e.pointerId !== press.pid) return;
@@ -1711,7 +1789,7 @@ document.addEventListener('pointerup', e=>{
   if(!p.moved) activate(p.id, p.act);
 });
 document.addEventListener('pointercancel', ()=>{ if(press){ clearTimeout(press.timer); if(press.tile){ press.el.classList.remove('lifting'); press.el.style.transform = ''; } press = null; } });
-document.addEventListener('contextmenu', e=>{ if(e.target.closest('.row, .spot')) e.preventDefault(); });
+document.addEventListener('contextmenu', e=>{ if(e.target.closest('.row, .spot, #main .sec')) e.preventDefault(); });
 document.addEventListener('click', e=>{
   const t = e.target.closest('#main .row, .spot');
   if(t){ if(e.detail === 0){ const ab = e.target.closest('[data-gact],[data-wact]'); activate(t.dataset.id, ab ? (ab.dataset.gact || ab.dataset.wact) : null); } return; }
@@ -2000,7 +2078,7 @@ function drawSetup(){
   } else {
     const seg = (id, val, opts) => `<div class="segs" id="${id}">${opts.map(([v,l])=>`<button data-v="${v}" class="${val===v?'sel':''}">${l}</button>`).join('')}</div>`;
     B.innerHTML = `<label>Home name</label><input type="text" id="gName" value="${esc(home.name)}" maxlength="30">
-      <label>All rooms – buttons</label>${seg('gAll', cfg.allSize, [['compact','Compact'],['normal','Normal']])}
+      <label>All rooms – buttons</label>${seg('gAll', cfg.allSize, [['summary','By type'],['compact','Every device'],['normal','Large']])}
       <label>Inside a room – buttons</label>${seg('gRoom', cfg.roomSize, [['large','Large'],['normal','Normal']])}
       <label>Button style</label>${seg('gStyle', cfg.style || 'picture', [['picture','Picture'],['color','Colour'],['bright','Bright'],['minimal','Minimal']])}
       <div class="hint">Picture: big pictures that light up · Colour: buttons glow in their own colour when on · Bright: white when on · Minimal: clean outlines.</div>

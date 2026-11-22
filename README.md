@@ -66,3 +66,12 @@ One full-width button that controls several devices — e.g. 2 cove lights + 2 s
 - Each device has its own large control inside the card; Low/High lights get **Off · Low · High**.
 - The individual buttons are hidden in that room (they stay on the map); turn this off in the group editor.
 - Add or edit under **Setup → Controllers → Group buttons**, or long-press a group. On first start the app creates a Lights and a Climate button in each room that has them.
+
+## All rooms – "By type" (default)
+
+Every room in one window, one small button per kind of device: **Cove lights · Spot lights · Lights · Climate (AC + fan) · TV**, plus gate, watering and anything else.
+- **Tap**: all of that kind on / off (cove lights return to their last Low/High).
+- **Press and hold**: detailed controls — each cove Off/Low/High, each spot, AC, fan, TV…
+- **Gate**: tap opens / closes (the button shows what the next tap does); hold for Open · Half open · Close.
+- **Press and hold a room** (empty space or its name) to open that room's full controls.
+- Setup → General → *All rooms – buttons*: By type · Every device · Large.
