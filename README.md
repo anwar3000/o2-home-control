@@ -61,7 +61,7 @@ Brand assets: `brand/` (O2 gold #D4AF37).
 ## Group buttons (Lights / Climate)
 
 One full-width button that controls several devices — e.g. 2 cove lights + 2 spot lights, or AC + fan.
-- **Half height** (default): Lights = one row Spots · Cove low · Cove high · All on/off; Climate = big Fan quick button with a small AC button on the right. **Full** shows a control for every device.
+- Inside a room the Lights button shows **every light as its own tile** (default): cove lights get Low / High (tap the lit one again for off), spots and lamps tap on/off, plus All on/off. **Half height** option: Lights = one row Spots · Cove low · Cove high · All on/off; Climate = big Fan quick button with a small AC button on the right. **Full** shows a control for every device.
 - Big picture + master power button: turns the whole group on or off (cove lights return to their last Low/High).
 - Each device has its own large control inside the card; Low/High lights get **Off · Low · High**.
 - The individual buttons are hidden in that room (they stay on the map); turn this off in the group editor.

@@ -404,6 +404,22 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .all-icons.scope-all .row.sz-s .ic svg{width:26px !important;height:26px !important}
 .all-icons.scope-all .row.sz-s.cat .cn{top:3px;right:3px;min-width:16px;height:16px;font-size:9.5px;padding:0 4px}
 .editing.all-icons.scope-all .row.sz-s{min-height:72px !important;justify-content:flex-end !important}
+/* detailed group card inside a room: a tile for every light, cove = Low / High */
+.grp.full .gh{padding:12px 14px 10px;gap:12px}
+.grp.full .gimg{width:50px;height:50px;border-radius:16px}
+.grp.full .gimg svg{width:30px;height:30px}
+.grp.full .gtx b{font-size:17px}
+.grp.full .gtx small{font-size:12.5px;margin-top:2px}
+.grp.full .gpow{width:auto;height:44px;border-radius:14px;padding:0 14px;display:flex;gap:6px;font-weight:700;font-size:13.5px}
+.grp.full .gpow svg{width:19px;height:19px}
+.grp.full .gpow.on{background:#f1f4f9;color:#0d111b;border-color:transparent;box-shadow:none}
+.grp.full .gms{grid-template-columns:repeat(auto-fill,minmax(146px,1fr));gap:8px;padding:0 10px 10px}
+.grp.full .gm,.grp.full .gm.dual{grid-column:auto;display:grid;grid-template-columns:38px minmax(0,1fr);align-content:center;align-items:center;column-gap:9px;row-gap:8px;min-height:96px;padding:10px}
+.grp.full .gm .gi{width:38px;height:38px}
+.grp.full .gm .gi svg{width:21px;height:21px}
+.grp.full .gm .gt b{font-size:14px}
+.grp.full .gm .glv{grid-column:1 / -1;margin:0;flex-basis:auto;padding:3px;border-radius:12px}
+.grp.full .gm .glv i{flex:1;min-width:0;min-height:38px;font-size:13px}
 .ov{position:fixed;inset:0;z-index:40;background:rgba(2,4,9,.6);display:none;align-items:flex-end;justify-content:center}
 .ov.show{display:flex}
 .sheet{width:100%;max-width:560px;max-height:92vh;max-height:92dvh;overflow:auto;background:#121724;border-top:1px solid var(--line);
@@ -828,7 +844,7 @@ code{font-size:12px;background:rgba(255,255,255,.07);padding:1px 6px;border-radi
     <label>Type</label>
     <div class="segs" id="gpType"><button data-gt="lights">Lights</button><button data-gt="climate">Climate</button><button data-gt="other">Other</button></div>
     <label>Button</label>
-    <div class="segs" id="gpLayout"><button data-gl="slim">Half height</button><button data-gl="full">Full · every device</button></div>
+    <div class="segs" id="gpLayout"><button data-gl="slim">Half height</button><button data-gl="full">Every device</button></div>
     <div class="hint" id="gpLayoutHint"></div>
     <label>Room</label>
     <select id="gpRoom"></select>
@@ -1155,7 +1171,7 @@ function memberHTML(m){
   if(isDual(m)){ const lv = level(m), on = lv === 'low' || lv === 'high';
     return `<div class="gm dual ${on?'on':''} lvl-${lv||'none'} ${pending[k]?'pending':''} ${off?'offline':''}" style="--c:${m.color}" data-mid="${m.id}" role="group" aria-label="${esc(m.name)}">
       <span class="gi">${icon(m.icon)}</span><span class="gt"><b>${esc(m.name)}</b><small>${off ? 'Offline' : pending[k] ? 'Switching…' : {high:'High', low:'Low', off:'Off'}[lv] || 'No status'}</small></span>
-      <span class="glv"><i data-lv="off" role="button">Off</i><i data-lv="low" role="button">Low</i><i data-lv="high" role="button">High</i></span></div>`; }
+      <span class="glv"><i data-lv="low" role="button">Low</i><i data-lv="high" role="button">High</i></span></div>`; }
   const st = power[k];
   return `<button class="gm ${st==='ON'?'on':''} ${pending[k]?'pending':''} ${off?'offline':''}" style="--c:${m.color}" data-mid="${m.id}" aria-pressed="${st==='ON'}" aria-label="${esc(m.name)}">
     <span class="gi">${icon(m.icon)}</span><span class="gt"><b>${esc(m.name)}</b><small>${off ? 'Offline' : stateTxt(m)}</small></span></button>`;
@@ -1168,6 +1184,7 @@ function climSplit(g){              // main (fast) = fans, side (small, right) =
 const setLbl = (set, one, many) => set.length === 1 ? set[0].name : many;
 const setSt = set => { const n = set.filter(devOn).length, p = set.some(m=>pending[keyOf(m)]);
   return p ? 'Switching…' : n === 0 ? 'Off' : n === set.length ? 'On' : `${n} of ${set.length} on`; };
+const gLayout = g => g.layout || (g.gtype === 'climate' ? 'slim' : 'full');
 function slimHTML(g, ms, n, live, sub){
   const k = keyOf(g), head = `<div class="gh"><span class="gimg ${live?'on':''}">${icon(g.icon)}</span><span class="gtx"><b>${esc(g.name)}</b><small>${sub}</small></span>${ARR(g, true)}</div>`;
   if(g.gtype === 'climate'){
@@ -1191,10 +1208,10 @@ function groupHTML(g){
   const sub = !ms.length ? 'No devices' : n === 0 ? `All off · ${ms.length}` : n === ms.length ? `All on · ${ms.length}` : `${n} of ${ms.length} on`;
   if(compactNow()) return `<button class="row sz-s grp-s ${live?'on':''}" style="--c:${g.color}" data-k="${k}" data-id="${g.id}" aria-label="${esc(g.name)}: ${sub}">
       <span class="ic">${icon(g.icon)}</span><span class="tx"><b>${esc(g.name)}</b></span>${ARR(g, true)}</button>`;
-  if(g.layout !== 'full') return slimHTML(g, ms, n, live, sub);
-  return `<div class="row wide grp ${live?'live':''}" style="--c:${g.color}" data-k="${k}" data-id="${g.id}" role="group" aria-label="${esc(g.name)}">
+  if(gLayout(g) !== 'full') return slimHTML(g, ms, n, live, sub);
+  return `<div class="row wide grp full ${live?'live':''}" style="--c:${g.color}" data-k="${k}" data-id="${g.id}" role="group" aria-label="${esc(g.name)}">
     <div class="gh"><span class="gimg ${live?'on':''}">${icon(g.icon)}</span><span class="gtx"><b>${esc(g.name)}</b><small>${sub}</small></span>
-      <button class="gpow" data-gx="master" aria-pressed="${live}" aria-label="${esc(g.name)} ${live ? 'off' : 'on'}">${icon('power')}</button>${ARR(g, true)}</div>
+      <button class="gpow ${live?'on':''}" data-gx="master" aria-pressed="${live}" aria-label="${esc(g.name)} ${live ? 'off' : 'on'}">${icon('power')}${live ? 'All off' : 'All on'}</button>${ARR(g, true)}</div>
     <div class="gms">${ms.map(memberHTML).join('')}</div></div>`;
 }
 function tileHTML(d){
@@ -1716,7 +1733,7 @@ function activate(id, act){
     runList(ms.map(m=>[m, any ? 'OFF' : 'ON']), `${d.name} ${any ? 'off' : 'on'}`); return; }
   if(isGate(d)){ if(act) gateDo(d, act); else if(compactNow() && gateNext(d)) gateDo(d, gateNext(d)); else openGate(d); return; }
   if(isDual(d)){ vib(12); const lv = level(d);
-    if(act === 'low' || act === 'high' || act === 'off') dualSet(d, act);
+    if(act === 'low' || act === 'high') dualSet(d, lv === act ? 'off' : act); else if(act === 'off') dualSet(d, 'off');
     else dualSet(d, lv === 'low' || lv === 'high' ? 'off' : (dualLast[d.id] || 'high'));
     return; }
   if(isWater(d)){ if(act === 'start') waterCmd(d, {cmd:'start', minutes: d.minutes || 10}); else if(act === 'stop') waterCmd(d, {cmd:'stop'}); else openWater(d); return; }
@@ -1964,8 +1981,8 @@ function drawGroup(){
   $('#gpMembers').innerHTML = list.map(d=>`<button data-gm="${d.id}" style="--c:${d.color}" class="${(g.members||[]).includes(d.id)?'sel':''}">${icon(d.icon)}${esc(d.name)}${(d.room||'') !== rid ? ` <small>· ${esc(roomById(d.room)?.name || 'Other')}</small>` : ''}</button>`).join('')
     || '<div class="hint">No devices yet — add relays under Controllers first.</div>';
   $('#gpHide').checked = g.hideMembers !== false;
-  document.querySelectorAll('#gpLayout button').forEach(b=>b.classList.toggle('sel', b.dataset.gl === (g.layout === 'full' ? 'full' : 'slim')));
-  $('#gpLayoutHint').textContent = g.layout === 'full' ? 'A big card with a control for each device.'
+  document.querySelectorAll('#gpLayout button').forEach(b=>b.classList.toggle('sel', b.dataset.gl === gLayout(g)));
+  $('#gpLayoutHint').textContent = gLayout(g) === 'full' ? 'A tile for every device · cove lights get Low / High (tap again for off).'
     : g.gtype === 'climate' ? 'Fan as a big quick button, AC as a small button on the right.' : 'One row: spots · cove low · cove high · all on/off.';
   $('#gpDel').style.display = g.isNew ? 'none' : '';
 }
