@@ -98,3 +98,8 @@ MQTT: `o2/energy/main/state` (retained JSON: power W, current A, energy kWh, fre
 `o2/energy/main/set` `{"cmd":"get"}` or `{"relay":true|false}`.
 Default data points (PC473/PC321): 101-106 L1, 111-116 L2, 121-126 L3 (V×0.1, A×0.001, W, PF×0.01, kWh×0.01), 131 total kWh,
 132 total A, 133 total W, 135 Hz. Different firmware? Override in `"map"`, e.g. `"power": [115, 1]`.
+
+### One-line light buttons (e.g. Living + Dining)
+Group editor → Button: **One line** → `[All on/off] [Spot] [Strip 1] [Strip 2]` in one row. Make one Lights button per area
+(Living, Dining) in the same room; each is one line. Cove lights in a line: tap = Low → High → Off.
+Climate card: fan takes 2 parts, each AC 1 part.

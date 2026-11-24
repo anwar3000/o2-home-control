@@ -492,6 +492,27 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .pkv b{font-size:16px;font-variant-numeric:tabular-nums}
 .praw{margin-top:14px;font-size:12px;color:var(--mute)}
 .praw pre{white-space:pre-wrap;word-break:break-all;background:#0d111b;border-radius:12px;padding:10px;margin:8px 0 0;max-height:180px;overflow:auto}
+/* "one line" group: [all on/off] [light] [light] [light] — e.g. Living on one line, Dining on the next */
+.row.grp.line{border-radius:20px}
+.grp .gln{display:grid;grid-template-columns:repeat(auto-fit,minmax(72px,1fr));gap:7px;padding:8px}
+.grp .gln button{position:relative;min-width:0;min-height:84px;border-radius:15px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px 4px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);color:#e9edf5;transition:background .25s,border-color .25s}
+.grp .gln button:active{transform:scale(.95)}
+.grp .gln button svg{width:24px;height:24px;color:#9aa3b5}
+.grp .gln b{font-size:12.5px;font-weight:650;line-height:1.15;text-align:center;max-width:100%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.grp .gln small{font-size:10.5px;font-weight:650;color:#7f889b}
+.grp .gln .lm.on{background:color-mix(in srgb,var(--c) 18%,#141926);border-color:color-mix(in srgb,var(--c) 55%,transparent)}
+.grp .gln .lm.on svg{color:var(--c);filter:drop-shadow(0 0 6px var(--c))}
+.grp .gln .lm.on small{color:color-mix(in srgb,var(--c) 70%,#fff)}
+.grp .gln .lall{background:#232b3b}
+.grp .gln .lall b{font-size:13.5px;font-weight:750}
+.grp .gln .lall.on{background:#f1f4f9;color:#0d111b;border-color:transparent}
+.grp .gln .lall.on svg{color:#0d111b}
+.grp .gln .lall.on small{color:#56606f}
+.grp .gln .pending{opacity:.65}
+.grp .gln button b{font-size:12.5px !important;color:inherit !important;letter-spacing:0 !important}
+.grp .gln .lall b{font-size:13.5px !important;font-weight:750 !important}
+.editing .grp .gln{opacity:.4;pointer-events:none}
 .ov{position:fixed;inset:0;z-index:40;background:rgba(2,4,9,.6);display:none;align-items:flex-end;justify-content:center}
 .ov.show{display:flex}
 .sheet{width:100%;max-width:560px;max-height:92vh;max-height:92dvh;overflow:auto;background:#121724;border-top:1px solid var(--line);
@@ -937,7 +958,7 @@ code{font-size:12px;background:rgba(255,255,255,.07);padding:1px 6px;border-radi
     <label>Type</label>
     <div class="segs" id="gpType"><button data-gt="lights">Lights</button><button data-gt="climate">Climate</button><button data-gt="other">Other</button></div>
     <label>Button</label>
-    <div class="segs" id="gpLayout"><button data-gl="slim">Half height</button><button data-gl="full">Every device</button></div>
+    <div class="segs" id="gpLayout"><button data-gl="slim">Half height</button><button data-gl="full">Every device</button><button data-gl="line">One line</button></div>
     <div class="hint" id="gpLayoutHint"></div>
     <label>Room</label>
     <select id="gpRoom"></select>
@@ -1280,6 +1301,13 @@ function climSplit(g){              // main (fast) = fans, side (small, right) =
 const setLbl = (set, one, many) => set.length === 1 ? set[0].name : many;
 const setSt = set => { const n = set.filter(devOn).length, p = set.some(m=>pending[keyOf(m)]);
   return p ? 'Switching…' : n === 0 ? 'Off' : n === set.length ? 'On' : `${n} of ${set.length} on`; };
+function lineHTML(g, ms, live){
+  const st = m => pending[keyOf(m)] ? '…' : isDual(m) ? ({high:'High', low:'Low', off:'Off'}[level(m)] || '—') : devOn(m) ? 'On' : 'Off';
+  return `<div class="row wide grp line ${live?'live':''}" style="--c:${g.color}" data-k="${keyOf(g)}" data-id="${g.id}" role="group" aria-label="${esc(g.name)}"><div class="gln">
+    <button class="lall ${live?'on':''}" data-gx="master" aria-pressed="${live}">${icon('power')}<b>${esc(g.name)}</b><small>${live ? 'All off' : 'All on'}</small></button>
+    ${ms.map(m=>`<button class="lm ${devOn(m)?'on':''} ${pending[keyOf(m)]?'pending':''}" data-gx="cyc:${m.id}" style="--c:${m.color}" aria-pressed="${devOn(m)}" aria-label="${esc(m.name)}">${icon(m.icon)}<b>${esc(m.name)}</b><small>${st(m)}</small></button>`).join('')}
+  </div>${ARR(g, true)}</div>`;
+}
 const gLayout = g => g.layout || (g.gtype === 'climate' ? 'slim' : 'full');
 function slimHTML(g, ms, n, live, sub){
   const k = keyOf(g), head = `<div class="gh"><span class="gimg ${live?'on':''}">${icon(g.icon)}</span><span class="gtx"><b>${esc(g.name)}</b><small>${sub}</small></span>${ARR(g, true)}</div>`;
@@ -1304,6 +1332,7 @@ function groupHTML(g){
   const sub = !ms.length ? 'No devices' : n === 0 ? `All off · ${ms.length}` : n === ms.length ? `All on · ${ms.length}` : `${n} of ${ms.length} on`;
   if(compactNow()) return `<button class="row sz-s grp-s ${live?'on':''}" style="--c:${g.color}" data-k="${k}" data-id="${g.id}" aria-label="${esc(g.name)}: ${sub}">
       <span class="ic">${icon(g.icon)}</span><span class="tx"><b>${esc(g.name)}</b></span>${ARR(g, true)}</button>`;
+  if(gLayout(g) === 'line') return lineHTML(g, ms, live);
   if(gLayout(g) !== 'full') return slimHTML(g, ms, n, live, sub);
   return `<div class="row wide grp full ${live?'live':''}" style="--c:${g.color}" data-k="${k}" data-id="${g.id}" role="group" aria-label="${esc(g.name)}">
     <div class="gh"><span class="gimg ${live?'on':''}">${icon(g.icon)}</span><span class="gtx"><b>${esc(g.name)}</b><small>${sub}</small></span>
@@ -1884,6 +1913,8 @@ function activate(id, act){
   if(isGroup(d) && act && act !== 'master'){ const ms = gMembers(d).filter(canOff);
     if(act.startsWith('lv:')){ const lv = act.slice(3), du = ms.filter(isDual), all = du.every(m=>level(m) === lv); vib(15);
       du.forEach((m, i)=>setTimeout(()=>dualSet(m, all ? 'off' : lv), i * 160)); return; }
+    if(act.startsWith('cyc:')){ const m = ms.find(x=>x.id === act.slice(4)); if(!m) return;
+      if(isDual(m)){ const lv = level(m); dualSet(m, lv === 'low' ? 'high' : lv === 'high' ? 'off' : 'low'); } else activate(m.id); return; }
     if(act.startsWith('one:')){ const m = ms.find(x=>x.id === act.slice(4)); if(m) activate(m.id); return; }
     const set = act === 'sw' ? ms.filter(m=>!isDual(m)) : act === 'main' ? climSplit(d)[0] : act === 'side' ? climSplit(d)[1] : [];
     if(set.length){ const any = set.some(devOn); runList(set.map(m=>[m, any ? 'OFF' : 'ON'])); }
@@ -2142,7 +2173,7 @@ function drawGroup(){
     || '<div class="hint">No devices yet — add relays under Controllers first.</div>';
   $('#gpHide').checked = g.hideMembers !== false;
   document.querySelectorAll('#gpLayout button').forEach(b=>b.classList.toggle('sel', b.dataset.gl === gLayout(g)));
-  $('#gpLayoutHint').textContent = gLayout(g) === 'full' ? 'A tile for every device · cove lights get Low / High (tap again for off).'
+  $('#gpLayoutHint').textContent = gLayout(g) === 'line' ? 'One row: all on/off, then each light. Cove: tap for Low → High → Off. Make one button per area, e.g. Living and Dining.' : gLayout(g) === 'full' ? 'A tile for every device · cove lights get Low / High (tap again for off).'
     : g.gtype === 'climate' ? 'Fan as a big quick button, AC as a small button on the right.' : 'One row: spots · cove low · cove high · all on/off.';
   $('#gpDel').style.display = g.isNew ? 'none' : '';
 }
