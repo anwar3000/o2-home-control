@@ -343,6 +343,22 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .style-bright .grp,.style-minimal .grp{background:linear-gradient(165deg,#171d2b,#10141e)}
 .row.sz-s.grp-s .ic{background:radial-gradient(circle,rgba(255,255,255,.08),transparent 70%)}
 .gpl{display:flex;flex-wrap:wrap;gap:8px}
+.climsel{display:flex;align-items:center;gap:10px;margin:-4px 0 14px 4px;font-size:12.5px;color:var(--mute)}
+.climsel select{flex:1;min-height:40px;padding:6px 10px;font-size:13.5px}
+.gsel{display:flex;flex-direction:column;gap:6px}
+.gsel .gs{display:flex;align-items:center;gap:10px;min-height:50px;padding:0 6px 0 12px;border-radius:14px;background:#0d111b;border:1px solid var(--line)}
+.gsel .gs > svg{width:20px;height:20px;color:var(--c);flex:none}
+.gsel .gs b{flex:1;min-width:0;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gsel .gs b small{color:var(--mute);font-weight:500}
+.gsel .gs button{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;color:var(--mute);flex:none}
+.gsel .gs button:disabled{opacity:.25}
+.gsel .gs button svg{width:18px;height:18px}
+.gsel .gs button.rm{color:#f87171}
+.gsel .empty{padding:14px;border:1px dashed var(--line);border-radius:14px;color:var(--mute);font-size:13.5px;text-align:center}
+.row.addgrp{grid-column:1 / -1 !important;display:none !important;min-height:64px !important;height:64px;padding:0 !important;border:1.5px dashed rgba(125,211,252,.45);background:transparent;color:#7dd3fc;
+  align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:15px;border-radius:18px}
+.row.addgrp svg{width:20px;height:20px}
+.editing .row.addgrp{display:flex !important}
 .gpl button{display:flex;align-items:center;gap:7px;min-height:42px;padding:0 13px 0 9px;border-radius:999px;border:1px solid var(--line);background:#0d111b;color:var(--mute);font-weight:600;font-size:13.5px}
 .gpl button svg{width:18px;height:18px}
 .gpl button small{opacity:.7;font-weight:500}
@@ -964,20 +980,26 @@ code{font-size:12px;background:rgba(255,255,255,.07);padding:1px 6px;border-radi
 <div class="ov" id="grpOv">
   <div class="sheet">
     <div class="grab"></div>
-    <h2>Group button</h2>
-    <p class="sub">One big button that controls several devices.</p>
+    <h2 id="gpTitle">Group button</h2>
+    <p class="sub">Build your own button: pick the devices, their order and the look.</p>
     <label>Name</label>
     <input id="gpName" maxlength="30">
     <label>Type</label>
-    <div class="segs" id="gpType"><button data-gt="lights">Lights</button><button data-gt="climate">Climate</button><button data-gt="other">Other</button></div>
+    <div class="segs" id="gpType"><button data-gt="lights">Lights</button><button data-gt="climate">Climate</button><button data-gt="other">Custom</button></div>
     <label>Button</label>
     <div class="segs" id="gpLayout"><button data-gl="slim">Half height</button><button data-gl="full">Every device</button><button data-gl="line">One line</button></div>
     <div class="hint" id="gpLayoutHint"></div>
     <label>Room</label>
     <select id="gpRoom"></select>
-    <label>Devices in this button</label>
-    <div class="hint" style="margin-top:0">Tap to add or remove.</div>
+    <label>In this button <span id="gpCount" style="color:var(--mute);font-weight:500"></span></label>
+    <div class="gsel" id="gpSel"></div>
+    <label>Add devices</label>
+    <div class="hint" style="margin-top:0">Tap to add. Devices from this room come first.</div>
     <div class="gpl" id="gpMembers"></div>
+    <label>Icon</label>
+    <div class="icons" id="gpIcons"></div>
+    <label>Colour</label>
+    <div class="colors" id="gpColors"></div>
     <label class="tgl"><span>Hide these buttons in the room<small>So nothing shows twice. They stay on the map.</small></span><input type="checkbox" id="gpHide"><span class="sw"></span></label>
     <div class="actions">
       <button class="btn danger small" id="gpDel">Delete</button>
@@ -1079,6 +1101,7 @@ const ICONS = {
   grip:`<circle cx="9" cy="6" r="1.3"/><circle cx="15" cy="6" r="1.3"/><circle cx="9" cy="12" r="1.3"/><circle cx="15" cy="12" r="1.3"/><circle cx="9" cy="18" r="1.3"/><circle cx="15" cy="18" r="1.3"/>`,
   gear:`<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>`,
   move:`<path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/>`,
+  x:`<path d="M6 6l12 12M18 6L6 18"/>`,
   up:`<path d="M6 15l6-6 6 6"/>`, down:`<path d="M6 9l6 6 6-6"/>`,
   trash:`<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>`,
   left:`<path d="M15 6l-6 6 6 6"/>`, right:`<path d="M9 6l6 6-6 6"/>`,
@@ -1259,7 +1282,8 @@ const CATS = [                        // order = order on screen
 const hasClim = rid => inRoom(rid).filter(d=>CATS[3].test(d)).length >= 2;
 function summaryIn(rid){             // kinds of devices in a room, plus anything that is not one of them
   const devs = inRoom(rid), taken = new Set(), out = [];
-  const split = !!roomById(rid)?.splitClimate;
+  const rr = roomById(rid), cm = rr?.climate || (rr?.splitClimate ? 'split' : 'auto');
+  const split = cm === 'split' || (cm === 'auto' && devs.filter(d=>d.icon === 'ac').length >= 2);
   CATS.forEach(c=>{ if(split && c.t === 'climate') return; const m = devs.filter(d=>canOff(d) && !taken.has(d) && c.test(d));
     if(m.length){ m.forEach(d=>taken.add(d)); out.push({cat:c, rid, members:m, id:`cat|${rid}|${c.t}`}); } });
   const all = [...out, ...devs.filter(d=>!taken.has(d))], ord = (home.order || {})[rid] || [];
@@ -1452,7 +1476,7 @@ function render(){
         return `<div class="sec" data-sec="${esc(r.id)}"><div class="sh"><button class="shl" data-scope="${esc(r.id)}" aria-label="Open ${esc(r.name)}"><b>${esc(r.name)}</b><small>${n ? n+' on' : ''}</small>${icon('right')}</button>
           <button class="soff" data-roomoff="${esc(r.id)}" aria-label="Turn off ${esc(r.name)}">${icon('power')}</button></div><div class="rows">${(cfg.allSize === 'summary' ? summaryIn(r.id).map(x=>x.cat ? catHTML(x) : tileHTML(x)) : rowsIn(r.id).map(tileHTML)).join('')}</div></div>`; }).join('') + '</div>';
     } else {
-      main.innerHTML = `<div class="rows" style="margin-top:12px">${rowsIn(roomsToShow[0].id).map(tileHTML).join('')}</div>`;
+      main.innerHTML = `<div class="rows" style="margin-top:12px">${rowsIn(roomsToShow[0].id).map(tileHTML).join('')}<button class="row addgrp" data-newgrp="${esc(roomsToShow[0].id)}">${icon('plus')}New button group</button></div>`;
     }
   }
   status(); drawPower();
@@ -1666,7 +1690,8 @@ function openPower(id){ pwrOpen = id || meters()[0]?.id; if(!pwrOpen) return; dr
 $('#pwrChip').onclick = ()=> openPower();
 $('#pwrClose').onclick = ()=> $('#pwrOv').classList.remove('show');
 $('#pwrEdit').onclick = ()=>{ $('#pwrOv').classList.remove('show'); openMeter(pwrOpen); };
-$('#main').addEventListener('click', e=>{ const p = e.target.closest('.pcard'); if(p) openPower(p.dataset.meter); });
+$('#main').addEventListener('click', e=>{ const p = e.target.closest('.pcard'); if(p) openPower(p.dataset.meter);
+  const ng = e.target.closest('[data-newgrp]'); if(ng) addGroup('other', ng.dataset.newgrp); });
 let mdraft = null;
 function openMeter(id){
   const m = meters().find(x=>x.id === id);
@@ -1972,7 +1997,7 @@ document.addEventListener('pointerdown', e=>{          // press and hold a room 
 ['pointerup','pointercancel'].forEach(ev=>document.addEventListener(ev, ()=>{ if(secPress){ clearTimeout(secPress.t); secPress = null; } }));
 document.addEventListener('pointermove', e=>{ if(secPress && Math.hypot(e.clientX - secPress.x, e.clientY - secPress.y) > 8){ clearTimeout(secPress.t); secPress = null; } });
 document.addEventListener('pointerdown', e=>{
-  const el = e.target.closest('#main .row, .spot');
+  const el = e.target.closest('#main .row:not(.addgrp), .spot');
   if(!el || (e.button && e.button !== 0)) return;
   const ab = e.target.closest('[data-gact],[data-wact],[data-lv],[data-gx]'), gm = e.target.closest('[data-mid]');
   if(editing && el.classList.contains('row') && e.target.closest('[data-grip]')){      // drag a button to reorder
@@ -2172,7 +2197,7 @@ $('#eSave').onclick = ()=>{
 const groupsAllAny = () => home.devices.filter(isGroup);
 let gdraft = null;
 function addGroup(type, rid){
-  const want = type === 'climate' ? (d=>['ac','fan','heater'].includes(d.icon)) : isLight;
+  const want = type === 'climate' ? (d=>['ac','fan','heater'].includes(d.icon)) : type === 'lights' ? isLight : (()=>false);
   const pool = used().filter(d=>canOff(d) && want(d));
   if(rid === undefined) rid = cfg.scope !== 'all' && (roomById(cfg.scope) || cfg.scope === '') ? cfg.scope
     : (home.rooms.map(r=>r.id).find(id=>pool.filter(d=>(d.room||'') === id).length >= 2) ?? home.rooms[0]?.id ?? '');
@@ -2192,7 +2217,17 @@ function drawGroup(){
   $('#gpRoom').innerHTML = `<option value="">— No room —</option>` + home.rooms.map(r=>`<option value="${esc(r.id)}" ${r.id===g.room?'selected':''}>${esc(r.name)}</option>`).join('');
   const rid = g.room || '', all = used().filter(canOff);
   const list = [...all.filter(d=>(d.room||'') === rid), ...all.filter(d=>(d.room||'') !== rid)];
-  $('#gpMembers').innerHTML = list.map(d=>`<button data-gm="${d.id}" style="--c:${d.color}" class="${(g.members||[]).includes(d.id)?'sel':''}">${icon(d.icon)}${esc(d.name)}${(d.room||'') !== rid ? ` <small>· ${esc(roomById(d.room)?.name || 'Other')}</small>` : ''}</button>`).join('')
+  const sel = (g.members || []).map(id=>all.find(d=>d.id === id)).filter(Boolean);
+  $('#gpTitle').textContent = g.isNew ? 'New button' : 'Edit button';
+  $('#gpCount').textContent = sel.length ? `· ${sel.length}` : '';
+  $('#gpSel').innerHTML = sel.map((d, i)=>`<div class="gs" style="--c:${d.color}">${icon(d.icon)}<b>${esc(d.name)}${(d.room||'') !== rid ? ` <small>· ${esc(roomById(d.room)?.name || 'Other')}</small>` : ''}</b>
+      <button data-mv="${i}:-1" aria-label="Move up" ${i ? '' : 'disabled'}>${icon('up')}</button><button data-mv="${i}:1" aria-label="Move down" ${i < sel.length - 1 ? '' : 'disabled'}>${icon('down')}</button>
+      <button class="rm" data-rm="${d.id}" aria-label="Remove">${icon('x')}</button></div>`).join('') || '<div class="empty">Nothing yet — tap devices below to add them.</div>';
+  $('#gpIcons').style.setProperty('--c', g.color);
+  $('#gpIcons').innerHTML = ['chandelier','bulb','spot','cove','strip','floor','snow','fan','ac','tv','projector','speaker','socket','curtain','grid','power','zap'].map(k=>`<button data-icon="${k}" class="${k === g.icon ? 'sel' : ''}" aria-label="${k}">${icon(k)}</button>`).join('');
+  $('#gpColors').innerHTML = COLORS.map(c=>`<button data-color="${c}" style="--sw:${c}" class="${c === g.color ? 'sel' : ''}" aria-label="${c}"></button>`).join('');
+  const inSel = new Set(g.members || []);
+  $('#gpMembers').innerHTML = list.filter(d=>!inSel.has(d.id)).map(d=>`<button data-gm="${d.id}" style="--c:${d.color}" class="${(g.members||[]).includes(d.id)?'sel':''}">${icon(d.icon)}${esc(d.name)}${(d.room||'') !== rid ? ` <small>· ${esc(roomById(d.room)?.name || 'Other')}</small>` : ''}</button>`).join('')
     || '<div class="hint">No devices yet — add relays under Controllers first.</div>';
   $('#gpHide').checked = g.hideMembers !== false;
   document.querySelectorAll('#gpLayout button').forEach(b=>b.classList.toggle('sel', b.dataset.gl === gLayout(g)));
@@ -2205,9 +2240,16 @@ $('#gpType').onclick = e=>{ const b = e.target.closest('[data-gt]'); if(!b) retu
   if(!gdraft.name || gdraft.name === old.name) gdraft.name = G.name;
   if(gdraft.icon === old.icon) gdraft.icon = G.icon; if(gdraft.color === old.color) gdraft.color = G.color;
   gdraft.gtype = b.dataset.gt; drawGroup(); };
+$('#gpSel').onclick = e=>{ const m = gdraft.members || [];
+  const mv = e.target.closest('[data-mv]'), rm = e.target.closest('[data-rm]');
+  if(mv){ const [i, d] = mv.dataset.mv.split(':').map(Number); const ok = used(); const sel = m.filter(id=>ok.some(x=>x.id === id)); const j = i + d;
+    if(j < 0 || j >= sel.length) return; [sel[i], sel[j]] = [sel[j], sel[i]]; gdraft.members = sel; drawGroup(); }
+  if(rm){ gdraft.members = m.filter(id=>id !== rm.dataset.rm); drawGroup(); } };
+$('#gpIcons').onclick = e=>{ const b = e.target.closest('[data-icon]'); if(b){ gdraft.icon = b.dataset.icon; drawGroup(); } };
+$('#gpColors').onclick = e=>{ const b = e.target.closest('[data-color]'); if(b){ gdraft.color = b.dataset.color; drawGroup(); } };
 $('#gpRoom').onchange = e=>{ gdraft.room = e.target.value; drawGroup(); };
 $('#gpMembers').onclick = e=>{ const b = e.target.closest('[data-gm]'); if(!b) return; const id = b.dataset.gm, m = gdraft.members || (gdraft.members = []);
-  const i = m.indexOf(id); if(i >= 0) m.splice(i, 1); else m.push(id); b.classList.toggle('sel', i < 0); };
+  if(!m.includes(id)) m.push(id); drawGroup(); };
 $('#gpLayout').onclick = e=>{ const b = e.target.closest('[data-gl]'); if(b){ gdraft.layout = b.dataset.gl; drawGroup(); } };
 $('#gpHide').onchange = e=>{ gdraft.hideMembers = e.target.checked; };
 $('#gpCancel').onclick = ()=> $('#grpOv').classList.remove('show');
@@ -2242,7 +2284,7 @@ function drawSetup(){
           <button class="icb" data-room-up="${i}" aria-label="Move up">${icon('up')}</button>
           <button class="icb" data-room-down="${i}" aria-label="Move down">${icon('down')}</button>
           <button class="icb" data-room-del="${r.id}" aria-label="Delete">${icon('trash')}</button></div>
-          ${hasClim(r.id) ? `<label class="tgl" style="margin:-2px 0 12px"><span>${esc(r.name)}: AC and fan as two buttons<small>In All rooms. Off = one Climate button</small></span><input type="checkbox" data-room-split="${r.id}" ${r.splitClimate?'checked':''}><span class="sw"></span></label>` : ''}`).join('')
+          ${hasClim(r.id) ? `<div class="climsel"><span>All rooms · climate</span><select data-room-clim="${r.id}">${[['auto','Auto · 2+ ACs separate'],['one','One Climate button'],['split','AC & fan separate']].map(([v, l])=>`<option value="${v}" ${(r.climate || (r.splitClimate ? 'split' : 'auto')) === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>` : ''}`).join('')
       + `<div class="actions" style="margin-top:14px"><button class="btn" data-room-add>+ Add room</button></div>`;
   } else if(stab === 'ctls'){
     const opts = sel => Array.from({length:32},(_,i)=>String(i+1).padStart(2,'0')).map(n=>`<option value="o2/villa/${n}" ${sel===`o2/villa/${n}`?'selected':''}>o2/villa/${n}</option>`).join('');
@@ -2274,7 +2316,7 @@ function drawSetup(){
       + groupsAllAny().map(g=>`<div class="lrow"><span class="wl">${icon(g.icon)}<b>${esc(g.name)}</b>
           <small>${esc(roomById(g.room)?.name || 'No room')} · ${gMembers(g).length} devices</small></span>
           <button class="icb" data-grp-edit="${g.id}" aria-label="Edit">${icon('pen')}</button></div>`).join('')
-      + `<div class="actions" style="margin-top:10px"><button class="btn" data-grp-add="lights">+ Lights button</button><button class="btn" data-grp-add="climate">+ Climate button</button></div>`
+      + `<div class="actions" style="margin-top:10px"><button class="btn" data-grp-add="lights">+ Lights button</button><button class="btn" data-grp-add="climate">+ Climate button</button><button class="btn" data-grp-add="other">+ Custom button</button></div>`
       + `<label style="margin-top:24px">Power meters</label><div class="hint" style="margin-top:0">Tuya PC473 and similar, read by the Pi bridge (install-pi-power.sh).</div>`
       + meters().map(m=>`<div class="lrow"><span class="wl">${icon('zap')}<b>${esc(m.name)}</b><small>${esc(m.topic)} · ${mLive(m) ? fmtWt(mLive(m).power) : 'no data'}</small></span>
           <button class="icb" data-meter-edit="${m.id}" aria-label="Edit">${icon('pen')}</button></div>`).join('')
@@ -2375,7 +2417,7 @@ $('#stabs').onclick = e=>{ const b = e.target.closest('[data-tab]'); if(b){ stab
 $('#setBody').addEventListener('input', e=>{
   const t = e.target, ds = t.dataset;
   if(ds.roomName){ const r = roomById(ds.roomName); if(r){ r.name = t.value.trim() || 'Room'; saveHome(); } }
-  if(ds.roomSplit){ const r = roomById(ds.roomSplit); if(r){ r.splitClimate = t.checked; saveHome(); render(); } }
+  if(ds.roomClim){ const r = roomById(ds.roomClim); if(r && r.climate !== t.value){ r.climate = t.value; delete r.splitClimate; saveHome(); render(); } }
   else if(ds.ctlIp){ ctlById(ds.ctlIp).ip = t.value.trim(); saveHome(); }
   else if(ds.ctlPass){ ctlById(ds.ctlPass).webpass = t.value; saveHome(); }
   else if(ds.ctlCustom){ ctlById(ds.ctlCustom).topic = t.value.trim().replace(/^\/+|\/+$/g,''); saveHome(); }

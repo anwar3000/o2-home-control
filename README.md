@@ -106,3 +106,10 @@ Climate card: fan takes 2 parts, each AC 1 part.
 
 ### Button size
 Setup → General → *Button size – All rooms* / *inside a room* (XS … XXL), or in **Arrange** mode tap **A− / A+** (applies to the screen you are on).
+
+### Your own buttons
+Arrange mode in a room → **+ New button group** (or Setup → Controllers → + Custom button): name, any devices (any room),
+order with ↑ ↓, remove ✕, icon, colour, and look (One line / Every device / Half height). Long-press a group to edit or delete it.
+
+### All rooms – climate per room
+Setup → Rooms → *All rooms · climate*: **Auto** (a room with 2+ ACs shows each AC separately), **One Climate button**, or **AC & fan separate**.
