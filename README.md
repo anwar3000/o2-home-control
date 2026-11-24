@@ -103,3 +103,6 @@ Default data points (PC473/PC321): 101-106 L1, 111-116 L2, 121-126 L3 (V×0.1, A
 Group editor → Button: **One line** → `[All on/off] [Spot] [Strip 1] [Strip 2]` in one row. Make one Lights button per area
 (Living, Dining) in the same room; each is one line. Cove lights in a line: tap = Low → High → Off.
 Climate card: fan takes 2 parts, each AC 1 part.
+
+### Button size
+Setup → General → *Button size – All rooms* / *inside a room* (XS … XXL), or in **Arrange** mode tap **A− / A+** (applies to the screen you are on).

@@ -273,6 +273,8 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .editbar span{flex:1;font-size:14px;line-height:1.35}
 .editbar button{padding:12px 20px;border-radius:13px;background:#0b0e16;color:#fff;font-weight:700}
 .editing .editbar{display:flex}
+.editbar .zst{flex:none;display:flex;gap:6px}
+.editbar .zst button{padding:12px 13px;background:#fff;color:#0b0e16;border:1px solid rgba(11,14,22,.15)}
 .musicbar{background:linear-gradient(90deg,#4c1d95,#9d174d);color:#fff}
 .music .musicbar{display:flex}
 .editing .musicbar{display:none}
@@ -492,26 +494,36 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .pkv b{font-size:16px;font-variant-numeric:tabular-nums}
 .praw{margin-top:14px;font-size:12px;color:var(--mute)}
 .praw pre{white-space:pre-wrap;word-break:break-all;background:#0d111b;border-radius:12px;padding:10px;margin:8px 0 0;max-height:180px;overflow:auto}
-/* "one line" group: [all on/off] [light] [light] [light] — e.g. Living on one line, Dining on the next */
-.row.grp.line{border-radius:20px}
-.grp .gln{display:grid;grid-template-columns:repeat(auto-fit,minmax(72px,1fr));gap:7px;padding:8px}
-.grp .gln button{position:relative;min-width:0;min-height:84px;border-radius:15px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px 4px;
-  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);color:#e9edf5;transition:background .25s,border-color .25s}
-.grp .gln button:active{transform:scale(.95)}
-.grp .gln button svg{width:24px;height:24px;color:#9aa3b5}
-.grp .gln b{font-size:12.5px;font-weight:650;line-height:1.15;text-align:center;max-width:100%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.grp .gln small{font-size:10.5px;font-weight:650;color:#7f889b}
-.grp .gln .lm.on{background:color-mix(in srgb,var(--c) 18%,#141926);border-color:color-mix(in srgb,var(--c) 55%,transparent)}
-.grp .gln .lm.on svg{color:var(--c);filter:drop-shadow(0 0 6px var(--c))}
-.grp .gln .lm.on small{color:color-mix(in srgb,var(--c) 70%,#fff)}
-.grp .gln .lall{background:#232b3b}
-.grp .gln .lall b{font-size:13.5px;font-weight:750}
-.grp .gln .lall.on{background:#f1f4f9;color:#0d111b;border-color:transparent}
-.grp .gln .lall.on svg{color:#0d111b}
-.grp .gln .lall.on small{color:#56606f}
-.grp .gln .pending{opacity:.65}
-.grp .gln button b{font-size:12.5px !important;color:inherit !important;letter-spacing:0 !important}
-.grp .gln .lall b{font-size:13.5px !important;font-weight:750 !important}
+/* "one line" light bar: [area · all on/off] | light | light | light */
+.row.grp.line{border-radius:22px;padding:6px !important;background:linear-gradient(180deg,#171c28,#10131c);border:1px solid rgba(255,255,255,.07);
+  box-shadow:0 1px 0 rgba(255,255,255,.04) inset,0 10px 30px -18px rgba(0,0,0,.8)}
+.row.grp.line.live{border-color:color-mix(in srgb,var(--c) 22%,rgba(255,255,255,.07))}
+.grp .gln{display:grid;grid-template-columns:1.15fr repeat(calc(var(--n) - 1),minmax(0,1fr));align-items:stretch}
+.grp .gln > button{position:relative;min-width:0;min-height:92px;border:0;border-radius:17px;background:transparent;color:#e9edf5;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px 4px 10px;transition:background .3s}
+.grp .gln > button:active{transform:scale(.96)}
+.grp .gln > button + button::before{content:"";position:absolute;left:-.5px;top:24%;bottom:24%;width:1px;background:rgba(255,255,255,.07)}
+.grp .gln > button.on::before,.grp .gln > button.on + button::before{opacity:0}
+.grp .gln b{font-size:12px !important;font-weight:600 !important;color:#c4cad6 !important;letter-spacing:.005em !important;line-height:1.2;text-align:center;max-width:100%;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.grp .gln .lm svg{width:26px;height:26px;color:#7d8699;stroke-width:1.6;transition:color .3s,filter .3s}
+.grp .gln .lm .ind{position:absolute;bottom:7px;left:50%;transform:translateX(-50%);display:flex;gap:3px}
+.grp .gln .lm .ind i{width:14px;height:3px;border-radius:2px;background:rgba(255,255,255,.08);transition:background .3s,box-shadow .3s}
+.grp .gln .lm.on{background:radial-gradient(90% 75% at 50% 0%,color-mix(in srgb,var(--c) 30%,transparent),transparent 72%),rgba(255,255,255,.035)}
+.grp .gln .lm.on svg{color:color-mix(in srgb,var(--c) 85%,#fff);filter:drop-shadow(0 0 7px var(--c))}
+.grp .gln .lm.on b{color:#fff !important}
+.grp .gln .lm .ind i.lit{background:var(--c);box-shadow:0 0 8px var(--c)}
+.grp .gln .lall{background:rgba(255,255,255,.035);border-radius:17px}
+.grp .gln .lall .pb{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;border:1.5px solid rgba(255,255,255,.16);transition:.3s}
+.grp .gln .lall .pb svg{width:19px;height:19px;color:#aab2c3}
+.grp .gln .lall b{font-size:13.5px !important;font-weight:750 !important;color:#f1f4f9 !important}
+.grp .gln .lall small{font-size:10.5px;font-weight:650;color:#7f889b;margin-top:-3px}
+.grp .gln .lall.on .pb{background:var(--c);border-color:transparent;box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 18%,transparent),0 6px 18px -6px var(--c)}
+.grp .gln .lall.on .pb svg{color:#111522}
+.grp .gln .lall.on small{color:color-mix(in srgb,var(--c) 75%,#fff)}
+.grp .gln .pending svg{animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.35}}
+@media (min-width:700px){ .grp .gln > button{min-height:100px} .grp .gln b{font-size:13px !important} }
 .editing .grp .gln{opacity:.4;pointer-events:none}
 .ov{position:fixed;inset:0;z-index:40;background:rgba(2,4,9,.6);display:none;align-items:flex-end;justify-content:center}
 .ov.show{display:flex}
@@ -835,7 +847,7 @@ code{font-size:12px;background:rgba(255,255,255,.07);padding:1px 6px;border-radi
   <div id="main"></div>
 </div>
 
-<div class="editbar"><span><b>Arrange mode</b><br>Drag icons on the map · tap a device to edit it</span><button id="doneBtn">Done</button></div>
+<div class="editbar"><span><b>Arrange mode</b><br>Drag icons on the map · tap a device to edit it</span><span class="zst"><button id="zOut" aria-label="Smaller buttons">A−</button><button id="zIn" aria-label="Bigger buttons">A+</button></span><button id="doneBtn">Done</button></div>
 <div class="musicbar" id="musicBar">
   <span class="eq"><i></i><i></i><i></i><i></i></span>
   <span class="mtx"><b>Music mode</b><small id="mbTxt"></small></span>
@@ -1302,10 +1314,14 @@ const setLbl = (set, one, many) => set.length === 1 ? set[0].name : many;
 const setSt = set => { const n = set.filter(devOn).length, p = set.some(m=>pending[keyOf(m)]);
   return p ? 'Switching…' : n === 0 ? 'Off' : n === set.length ? 'On' : `${n} of ${set.length} on`; };
 function lineHTML(g, ms, live){
-  const st = m => pending[keyOf(m)] ? '…' : isDual(m) ? ({high:'High', low:'Low', off:'Off'}[level(m)] || '—') : devOn(m) ? 'On' : 'Off';
-  return `<div class="row wide grp line ${live?'live':''}" style="--c:${g.color}" data-k="${keyOf(g)}" data-id="${g.id}" role="group" aria-label="${esc(g.name)}"><div class="gln">
-    <button class="lall ${live?'on':''}" data-gx="master" aria-pressed="${live}">${icon('power')}<b>${esc(g.name)}</b><small>${live ? 'All off' : 'All on'}</small></button>
-    ${ms.map(m=>`<button class="lm ${devOn(m)?'on':''} ${pending[keyOf(m)]?'pending':''}" data-gx="cyc:${m.id}" style="--c:${m.color}" aria-pressed="${devOn(m)}" aria-label="${esc(m.name)}">${icon(m.icon)}<b>${esc(m.name)}</b><small>${st(m)}</small></button>`).join('')}
+  const n = ms.filter(devOn).length;
+  const ind = m => { const k = keyOf(m);
+    if(isDual(m)){ const lv = level(m); return `<span class="ind"><i class="${lv === 'low' || lv === 'high' ? 'lit' : ''}"></i><i class="${lv === 'high' ? 'lit' : ''}"></i></span>`; }
+    return `<span class="ind"><i class="${power[k] === 'ON' ? 'lit' : ''}"></i></span>`; };
+  const lbl = m => isDual(m) ? ({high:'High', low:'Low'}[level(m)] || 'Off') : devOn(m) ? 'On' : 'Off';
+  return `<div class="row wide grp line ${live?'live':''}" style="--c:${g.color}" data-k="${keyOf(g)}" data-id="${g.id}" role="group" aria-label="${esc(g.name)}"><div class="gln" style="--n:${ms.length + 1}">
+    <button class="lall ${live?'on':''}" data-gx="master" aria-pressed="${live}" aria-label="${esc(g.name)}: ${live ? 'all off' : 'all on'}"><span class="pb">${icon('power')}</span><b>${esc(g.name)}</b><small>${n ? `${n} of ${ms.length} on` : 'All off'}</small></button>
+    ${ms.map(m=>`<button class="lm ${devOn(m)?'on':''} ${pending[keyOf(m)]?'pending':''}" data-gx="cyc:${m.id}" style="--c:${m.color}" aria-pressed="${devOn(m)}" aria-label="${esc(m.name)}: ${lbl(m)}">${icon(m.icon)}<b>${esc(m.name)}</b>${ind(m)}</button>`).join('')}
   </div>${ARR(g, true)}</div>`;
 }
 const gLayout = g => g.layout || (g.gtype === 'climate' ? 'slim' : 'full');
@@ -1375,8 +1391,14 @@ function onCount(list){ return list.filter(devOn).length; }
 const SIZE_LBL = {s:'Small', m:'Normal', l:'Wide'};
 const sizeOf = d => (isGate(d) || isWater(d) || isGroup(d)) ? 'l' : (d.size || 'm');
 const ARR = (d, compact) => `<span class="grip" data-grip aria-label="Drag to move">${icon('grip')}</span>` + ((compact || isGate(d) || isWater(d)) ? '' : `<span class="szb" data-size>${SIZE_LBL[sizeOf(d)]}</span>`);
+const ZOOMS = [0.8, 0.9, 1, 1.1, 1.2, 1.35, 1.5];
+const zKey = () => cfg.scope === 'all' ? 'zoomAll' : 'zoomRoom';
+function applyZoom(){ const z = +cfg[zKey()] || 1; $('#main').style.zoom = z === 1 ? '' : z; }
+function stepZoom(d){ const k = zKey(), cur = +cfg[k] || 1, i = ZOOMS.reduce((bi, z, j)=>Math.abs(z - cur) < Math.abs(ZOOMS[bi] - cur) ? j : bi, 2);
+  const nz = ZOOMS[Math.max(0, Math.min(ZOOMS.length - 1, i + d))]; cfg[k] = nz; saveCfg(); applyZoom(); toast(`${cfg.scope === 'all' ? 'All rooms' : 'Room'} buttons ${Math.round(nz * 100)}%`); }
+$('#zIn').onclick = ()=> stepZoom(1); $('#zOut').onclick = ()=> stepZoom(-1);
 function applyLook(){
-  const b = document.body;
+  const b = document.body; applyZoom();
   b.classList.toggle('scope-all', cfg.scope === 'all');
   b.classList.toggle('all-compact', cfg.allSize !== 'normal');
   b.classList.toggle('all-icons', !!cfg.allIcons && cfg.allSize !== 'normal');
@@ -2308,6 +2330,9 @@ function drawSetup(){
     const seg = (id, val, opts) => `<div class="segs" id="${id}">${opts.map(([v,l])=>`<button data-v="${v}" class="${val===v?'sel':''}">${l}</button>`).join('')}</div>`;
     B.innerHTML = `<label>Home name</label><input type="text" id="gName" value="${esc(home.name)}" maxlength="30">
       <label>All rooms – buttons</label>${seg('gAll', cfg.allSize, [['summary','By type'],['compact','Every device'],['normal','Large']])}
+      <label>Button size – All rooms</label>${seg('gZA', String(cfg.zoomAll || 1), [['0.8','XS'],['0.9','S'],['1','M'],['1.1','L'],['1.2','XL'],['1.35','XXL']])}
+      <label>Button size – inside a room</label>${seg('gZR', String(cfg.zoomRoom || 1), [['0.8','XS'],['0.9','S'],['1','M'],['1.1','L'],['1.2','XL'],['1.35','XXL']])}
+      <div class="hint">Also in Arrange mode: A− / A+.</div>
       <label class="tgl"><span>All rooms – small icons only<small>No names, more buttons on one screen</small></span><input type="checkbox" id="gIcons" ${cfg.allIcons?'checked':''}><span class="sw"></span></label>
       <label>Open the app on</label>
       <select id="gStart"><option value="last">Last visited room</option><option value="all">All rooms</option>${home.rooms.map(r=>`<option value="${esc(r.id)}">${esc(r.name)}</option>`).join('')}</select>
@@ -2327,6 +2352,7 @@ function drawSetup(){
     $('#gAwake').onchange = e=>{ cfg.awake = e.target.checked; saveCfg(); applyAwake(); };
     const bindSeg = (id, key) => { $('#' + id).onclick = e=>{ const b = e.target.closest('[data-v]'); if(!b) return; cfg[key] = b.dataset.v; saveCfg();
       document.querySelectorAll(`#${id} button`).forEach(x=>x.classList.toggle('sel', x === b)); render(); }; };
+    bindSeg('gZA', 'zoomAll'); bindSeg('gZR', 'zoomRoom');
     bindSeg('gAll', 'allSize'); bindSeg('gRoom', 'roomSize'); bindSeg('gStyle', 'style');
     $('#gStyle').addEventListener('click', ()=>{ cfg.styleSet = true; saveCfg(); });
     $('#gIcons').onchange = e=>{ cfg.allIcons = e.target.checked; saveCfg(); render(); };
