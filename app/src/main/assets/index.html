@@ -383,10 +383,12 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .grp .gcl .gside.on svg{color:#0b0e16}
 .grp .gcl .gside.on small{color:rgba(11,14,22,.7)}
 .grp .gcl .pending{opacity:.7}
-.grp .gcl.multi .gmain{flex:1 1 100%}
-.grp .gcl.multi .gside{flex:1 1 0;min-width:0;min-height:64px;flex-direction:row;gap:10px;padding:0 12px;justify-content:flex-start;text-align:left}
-.grp .gcl.multi .gside b{text-align:left;padding:0;flex:1}
-.grp .gcl.multi .gside small{order:3}
+.grp .gcl{display:grid !important;grid-template-columns:repeat(4,minmax(0,1fr))}
+.grp .gcl .gmain{grid-column:span var(--fs,3)}
+.grp .gcl .gside{grid-column:span 1;width:auto}
+.grp .gcl.multi .gmain{padding:0 10px;gap:9px}
+.grp .gcl.multi .gmain .gi{width:42px;height:42px}
+.grp .gcl.multi .gmain .sw2{display:none}
 .editing .grp .gact,.editing .grp .gcl{opacity:.4;pointer-events:none}
 .editing .grp .gcl{padding-right:56px}
 .rows .row.grp.slim{align-self:start}
@@ -1283,7 +1285,7 @@ function slimHTML(g, ms, n, live, sub){
   const k = keyOf(g), head = `<div class="gh"><span class="gimg ${live?'on':''}">${icon(g.icon)}</span><span class="gtx"><b>${esc(g.name)}</b><small>${sub}</small></span>${ARR(g, true)}</div>`;
   if(g.gtype === 'climate'){
     const [main, side] = climSplit(g), stOne = m => pending[keyOf(m)] ? 'Switching…' : devOn(m) ? 'On' : 'Off';
-    return `<div class="row wide grp slim clim ${live?'live':''}" style="--c:${g.color}" data-k="${k}" data-id="${g.id}" role="group" aria-label="${esc(g.name)}"><div class="gcl ${side.length > 1 || main.length > 1 ? 'multi' : ''}">
+    return `<div class="row wide grp slim clim ${live?'live':''}" style="--c:${g.color}" data-k="${k}" data-id="${g.id}" role="group" aria-label="${esc(g.name)}"><div class="gcl ${side.length > 1 ? 'multi' : ''}" style="--fs:${side.length === 0 ? 4 : side.length === 1 ? 3 : 2}">
       ${main.map(m=>`<button class="gmain ${devOn(m)?'on':''}" data-gx="one:${m.id}" style="--c:${m.color}" aria-pressed="${devOn(m)}"><span class="gi">${icon(m.icon)}</span>
         <span class="gt"><b>${esc(m.name)}</b><small>${stOne(m)}</small></span><span class="sw2"></span></button>`).join('')}
       ${side.map(m=>`<button class="gside ${devOn(m)?'on':''}" data-gx="one:${m.id}" style="--c:${m.color}" aria-pressed="${devOn(m)}">${icon(m.icon)}<b>${esc(m.name)}</b><small>${stOne(m)}</small></button>`).join('')}
