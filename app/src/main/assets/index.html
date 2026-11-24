@@ -498,7 +498,8 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .row.grp.line{border-radius:22px;padding:6px !important;background:linear-gradient(180deg,#171c28,#10131c);border:1px solid rgba(255,255,255,.07);
   box-shadow:0 1px 0 rgba(255,255,255,.04) inset,0 10px 30px -18px rgba(0,0,0,.8)}
 .row.grp.line.live{border-color:color-mix(in srgb,var(--c) 22%,rgba(255,255,255,.07))}
-.grp .gln{display:grid;grid-template-columns:1.15fr repeat(calc(var(--n) - 1),minmax(0,1fr));align-items:stretch}
+.grp .gln{display:grid;grid-template-columns:1.15fr repeat(var(--cols),minmax(0,1fr));grid-auto-rows:minmax(92px,auto);align-items:stretch}
+.grp .gln .lall{grid-row:1 / span var(--rows)}
 .grp .gln > button{position:relative;min-width:0;min-height:92px;border:0;border-radius:17px;background:transparent;color:#e9edf5;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px 4px 10px;transition:background .3s}
 .grp .gln > button:active{transform:scale(.96)}
@@ -1319,12 +1320,12 @@ function lineHTML(g, ms, live){
     if(isDual(m)){ const lv = level(m); return `<span class="ind"><i class="${lv === 'low' || lv === 'high' ? 'lit' : ''}"></i><i class="${lv === 'high' ? 'lit' : ''}"></i></span>`; }
     return `<span class="ind"><i class="${power[k] === 'ON' ? 'lit' : ''}"></i></span>`; };
   const lbl = m => isDual(m) ? ({high:'High', low:'Low'}[level(m)] || 'Off') : devOn(m) ? 'On' : 'Off';
-  return `<div class="row wide grp line ${live?'live':''}" style="--c:${g.color}" data-k="${keyOf(g)}" data-id="${g.id}" role="group" aria-label="${esc(g.name)}"><div class="gln" style="--n:${ms.length + 1}">
+  return `<div class="row wide grp line ${live?'live':''}" style="--c:${g.color}" data-k="${keyOf(g)}" data-id="${g.id}" role="group" aria-label="${esc(g.name)}"><div class="gln" style="--cols:${Math.max(1, Math.min(3, ms.length))};--rows:${Math.max(1, Math.ceil(ms.length / 3))}">
     <button class="lall ${live?'on':''}" data-gx="master" aria-pressed="${live}" aria-label="${esc(g.name)}: ${live ? 'all off' : 'all on'}"><span class="pb">${icon('power')}</span><b>${esc(g.name)}</b><small>${n ? `${n} of ${ms.length} on` : 'All off'}</small></button>
     ${ms.map(m=>`<button class="lm ${devOn(m)?'on':''} ${pending[keyOf(m)]?'pending':''}" data-gx="cyc:${m.id}" style="--c:${m.color}" aria-pressed="${devOn(m)}" aria-label="${esc(m.name)}: ${lbl(m)}">${icon(m.icon)}<b>${esc(m.name)}</b>${ind(m)}</button>`).join('')}
   </div>${ARR(g, true)}</div>`;
 }
-const gLayout = g => g.layout || (g.gtype === 'climate' ? 'slim' : 'full');
+const gLayout = g => g.layout || (g.gtype === 'climate' ? 'slim' : 'line');
 function slimHTML(g, ms, n, live, sub){
   const k = keyOf(g), head = `<div class="gh"><span class="gimg ${live?'on':''}">${icon(g.icon)}</span><span class="gtx"><b>${esc(g.name)}</b><small>${sub}</small></span>${ARR(g, true)}</div>`;
   if(g.gtype === 'climate'){
