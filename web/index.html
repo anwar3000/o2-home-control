@@ -264,6 +264,9 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .on .led{fill:#4ade80;stroke:#4ade80}
 .spin2{transform-origin:12px 17.1px;transform-box:view-box}
 .on .spin2{animation:rot 6s linear infinite}
+.flake{transform-origin:12px 12px;transform-box:view-box}
+.on .flake{animation:rot 9s linear infinite;filter:drop-shadow(0 0 3px #7dd3fc)}
+svg .flake path{stroke-linecap:round;stroke-linejoin:round}
 @keyframes blow{0%{transform:translateY(-1.5px);opacity:0}35%{opacity:1}100%{transform:translateY(2.5px);opacity:0}}
 .beam,.rays{opacity:0;transition:opacity .4s}
 .on .beam,.on .rays{opacity:1}
@@ -1084,6 +1087,7 @@ const ICONS = {
   outdoor:`<g class="rays"><path d="M6 6l-2-1M18 6l2-1M12 3V1"/></g><path d="M9 5h6l1 6H8z"/><path d="M12 11v10M8 21h8"/>`,
   fan:`<circle cx="12" cy="12" r="1.8"/><g class="spin"><path d="M12 10.2C11.2 6 12.3 3 14.8 3.2c2.3.2 2.4 3 .6 4.8-1 1-2.2 1.7-3.4 2.2z"/><path d="M13.6 12.9c3.2 2.8 3.8 6 1.7 7.4-1.9 1.3-4.1-.5-4-3 .1-1.5.7-3 1.6-4.2z"/><path d="M10.4 12.9c-4 1.4-7.2.8-7.3-1.7-.1-2.3 2.6-3.2 4.8-2 1.3.7 2.2 1.9 2.5 3.7z"/></g>`,
   ac:`<rect x="1.8" y="3.5" width="20.4" height="9.5" rx="3"/><path d="M5 10.4h14"/><path d="M6.4 5.3v3M5.1 6l2.6 1.5M5.1 7.5L7.7 6"/><circle cx="18.3" cy="6.6" r=".6" fill="currentColor" stroke="none" class="led"/><path class="blow" d="M7 15.5c.9 1.2-.9 2.6 0 4"/><path class="blow b2" d="M12 15.5c.9 1.2-.9 2.6 0 4"/><path class="blow b3" d="M17 15.5c.9 1.2-.9 2.6 0 4"/>`,
+  acflake:`<g class="flake"><path d="M12 12L12.00 2.00M12 12L20.66 7.00M12 12L20.66 17.00M12 12L12.00 22.00M12 12L3.34 17.00M12 12L3.34 7.00"/><path d="M12.00 7.20L9.30 4.60M12.00 7.20L14.70 4.60M12.00 4.40L10.40 2.90M12.00 4.40L13.60 2.90M16.16 9.60L17.06 5.96M16.16 9.60L19.76 10.64M18.58 8.20L19.08 6.06M18.58 8.20L20.68 8.84M16.16 14.40L19.76 13.36M16.16 14.40L17.06 18.04M18.58 15.80L20.68 15.16M18.58 15.80L19.08 17.94M12.00 16.80L14.70 19.40M12.00 16.80L9.30 19.40M12.00 19.60L13.60 21.10M12.00 19.60L10.40 21.10M7.84 14.40L6.94 18.04M7.84 14.40L4.24 13.36M5.42 15.80L4.92 17.94M5.42 15.80L3.32 15.16M7.84 9.60L4.24 10.64M7.84 9.60L6.94 5.96M5.42 8.20L3.32 8.84M5.42 8.20L4.92 6.06"/><path d="M12 9.6l2.08 1.2v2.4L12 14.4l-2.08-1.2v-2.4z"/></g>`,
   acsnow:`<rect x="1.8" y="2.5" width="20.4" height="8" rx="2.6"/><path d="M5 8h14"/><g class="spin2"><path d="M12 12.6v9M8.1 14.9l7.8 4.4M8.1 19.3l7.8-4.4"/><path d="M10.8 13.4l1.2 1.1 1.2-1.1M10.8 20.8l1.2-1.1 1.2 1.1"/></g>`,
   cassette:`<rect x="2.5" y="2.5" width="19" height="19" rx="3.5"/><rect x="8" y="8" width="8" height="8" rx="1.5"/><path d="M8 5.3h8M8 18.7h8M5.3 8v8M18.7 8v8"/><path class="blow" d="M10 10.5h4M10 13.5h4"/>`,
   windowac:`<rect x="2.5" y="4" width="19" height="16" rx="2.5"/><path d="M5.5 8h13M5.5 11h13M5.5 14h8"/><circle cx="17" cy="16.3" r="1.6"/><path class="led" d="M16.2 16.3h1.6"/>`,
@@ -1128,8 +1132,8 @@ const ICONS = {
   globe:`<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/>`,
   pen:`<path d="M4 20h4L19 9l-4-4L4 16z"/>`, plus:`<path d="M12 5v14M5 12h14"/>`,
 };
-const AC_ICONS = ['ac','acsnow','cassette','windowac','thermo'], isAC = d => AC_ICONS.includes(d.icon);
-const PICK_ICONS = ['bulb','spot','cove','strip','chandelier','floor','wall','outdoor','fan','ac','acsnow','cassette','windowac','thermo','heater','waterheater','projector','tv','speaker','socket','plug','curtain','door','gate','water','pump','cat'];
+const AC_ICONS = ['acflake','ac','acsnow','cassette','windowac','thermo'], isAC = d => AC_ICONS.includes(d.icon);
+const PICK_ICONS = ['bulb','spot','cove','strip','chandelier','floor','wall','outdoor','fan','acflake','ac','acsnow','cassette','windowac','thermo','heater','waterheater','projector','tv','speaker','socket','plug','curtain','door','gate','water','pump','cat'];
 const NAME_SUGGEST = ['Spot Light','Cove Light 1','Cove Light 2','Fan','AC','TV','Projector','Floor Strip Light',"Cat's Washroom",'Water Heater','Gate',
   'Ceiling Light','Chandelier','Wall Light','Floor Lamp','Exhaust Fan','Curtain','Socket','Garden Lights'];
 function iconFor(n){                 // pick an icon from the device name
@@ -1145,7 +1149,7 @@ function iconFor(n){                 // pick an icon from the device name
   if(/chandel/.test(n)) return 'chandelier';
   if(/floor ?lamp/.test(n)) return 'floor';
   if(/wall/.test(n)) return 'wall';
-  if(/\bac\b|a\/c|air ?con/.test(n)) return 'ac';
+  if(/\bac\b|a\/c|air ?con/.test(n)) return 'acflake';
   if(/fan|exhaust/.test(n)) return 'fan';
   if(/projector/.test(n)) return 'projector';
   if(/\btv\b|television/.test(n)) return 'tv';
@@ -1267,6 +1271,7 @@ if(!store.get('hc.grp1', false)){       // one time: a Lights button and a Clima
   });
   store.set('hc.home', home); store.set('hc.grp1', true);
 }
+if(!store.get('hc.flake1', false)){ home.devices.forEach(d=>{ if(d.icon === 'ac') d.icon = 'acflake'; }); store.set('hc.home', home); store.set('hc.flake1', true); }
 
 /* =================== RENDER =================== */
 const stateTxt = d => pending[keyOf(d)] ? 'Switching…' : power[keyOf(d)]==='ON' ? 'On' : power[keyOf(d)]==='OFF' ? 'Off' : 'No status';
@@ -2236,7 +2241,7 @@ function drawGroup(){
       <button data-mv="${i}:-1" aria-label="Move up" ${i ? '' : 'disabled'}>${icon('up')}</button><button data-mv="${i}:1" aria-label="Move down" ${i < sel.length - 1 ? '' : 'disabled'}>${icon('down')}</button>
       <button class="rm" data-rm="${d.id}" aria-label="Remove">${icon('x')}</button></div>`).join('') || '<div class="empty">Nothing yet — tap devices below to add them.</div>';
   $('#gpIcons').style.setProperty('--c', g.color);
-  $('#gpIcons').innerHTML = ['chandelier','bulb','spot','cove','strip','floor','snow','fan','ac','acsnow','cassette','windowac','thermo','tv','projector','speaker','socket','curtain','grid','power','zap'].map(k=>`<button data-icon="${k}" class="${k === g.icon ? 'sel' : ''}" aria-label="${k}">${icon(k)}</button>`).join('');
+  $('#gpIcons').innerHTML = ['chandelier','bulb','spot','cove','strip','floor','snow','fan','acflake','ac','acsnow','cassette','windowac','thermo','tv','projector','speaker','socket','curtain','grid','power','zap'].map(k=>`<button data-icon="${k}" class="${k === g.icon ? 'sel' : ''}" aria-label="${k}">${icon(k)}</button>`).join('');
   $('#gpColors').innerHTML = COLORS.map(c=>`<button data-color="${c}" style="--sw:${c}" class="${c === g.color ? 'sel' : ''}" aria-label="${c}"></button>`).join('');
   const inSel = new Set(g.members || []);
   $('#gpMembers').innerHTML = list.filter(d=>!inSel.has(d.id)).map(d=>`<button data-gm="${d.id}" style="--c:${d.color}" class="${(g.members||[]).includes(d.id)?'sel':''}">${icon(d.icon)}${esc(d.name)}${(d.room||'') !== rid ? ` <small>· ${esc(roomById(d.room)?.name || 'Other')}</small>` : ''}</button>`).join('')
